@@ -7,28 +7,85 @@ def get_cache_dir():
     from pathlib import Path
     return str(Path.home()) + '/.cache/music_daemon/'
 
-class DbProvider:
+class DBProvider:
     def __init__(self, db_path=get_cache_dir()+'music.db'):
         self.path = db_path
         self.conn = sqlite3.connect(self.path)
 
-    def add_song(self, name, audio_file_id, duration, bitrate, codec):
+    def add_song(self, song_id, name, audio_file_id, duration, bitrate, codec):
         c = self.conn.cursor()
         c.execute('INSERT INTO songs\
-                   (name, audio_file_id, duration, bitrate, codec)\
+                   (id, name, audio_file_id, duration, bitrate, codec)\
+                   VALUES (?, ?, ?, ?, ?, ?)',
+                   (song_id, name, audio_file_id, duration, bitrate, codec))
+
+    def add_song_artist(self, row_id, artist_id, song_id):
+        c = self.conn.cursor()
+        c.execute('INSERT INTO song_artists\
+                   (id, artist_id, song_id)\
+                   VALUES (?, ?, ?)',
+                   (row_id, artist_id, song_id))
+
+    def add_album_artist(self, row_id, artist_id, album_id):
+        c = self.conn.cursor()
+        c.execute('INSERT INTO album_artists\
+                   (id, artist_id, album_id)\
+                   VALUES (?, ?, ?)',
+                   (row_id, artist_id, song_id))
+
+    def add_album_song(self, row_id, song_id, album_id, index_in_album):
+        c = self.conn.cursor()
+        c.execute('INSERT INTO album_songs\
+                   (id, song_id, album_id, index_in_album)\
+                   VALUES (?, ?, ?, ?)',
+                   (row_id, song_id, album_id, index_in_album))
+
+    def add_single_song(self, row_id, song_id, image_file_id, year, time_added):
+        c = self.conn.cursor()
+        c.execute('INSERT INTO single_songs\
+                   (id, song_id, image_file_id, year, time_added)\
                    VALUES (?, ?, ?, ?, ?)',
-                   (name, audio_file_id, duration, bitrate, codec))
+                   (row_id, song_id, image_file_id, year, time_added))
+
+    def add_album(self, album_id, name, image_file_id, year, time_added):
+        c = self.conn.cursor()
+        c.execute('INSERT INTO albums\
+                   (id, name, year, image_file_id, time_added)\
+                   VALUES (?, ?, ?, ?, ?)',
+                   (album_id, name, year, image_file_id, time_added))
+
+    def add_artist(self, artist_id, name):
+        c = self.conn.cursor()
+        c.execute('INSERT INTO artists\
+                   (id, name)\
+                   VALUES (?, ?)',
+                   (artist_id, name))
+
+    def add_artist_image(self, row_id, artist_id, image_file_id):
+        c = self.conn.cursor()
+        c.execute('INSERT INTO artist_images\
+                   (id, image_file_id, artist_id)\
+                   VALUES (?, ?, ?)',
+                   (row_id, image_file_id, artist_id))
+
+    def add_liked_song(self, row_id, song_id, time_added):
+        c = self.conn.cursor()
+        c.execute('INSERT INTO liked_songs\
+                   (id, song_id, time_added)\
+                   VALUES (?, ?, ?)',
+                   (row_id, song_id, time_added))
 
     def commit(self):
         self.conn.commit()
 
 class MusicProvider:
     def __init__(self, username=None, password=None, backend_url='http://localhost'):
+        #self.db_provider = DBProvider()
         self.backend = backend_url
         self.username = username
         self.password = password
 
-    def music(self,):
+    def music(self):
         response = requests.get(
                 '{}/music/metadata'.format(self.backend)
         ).text
@@ -90,7 +147,7 @@ class MusicProvider:
             song = Song(song_metadata['id'],
                         song_metadata['name'],
                         [],
-                        song_metadata['audio_file_id'])
+                        self.get_file_url(song_metadata['audio_file_id']))
             songs_map[song.id] = song
             for song_artist in song_artists_map[song.id]:
                 artist = artists_map[song_artist['artist_id']]
@@ -118,8 +175,11 @@ class MusicProvider:
             for artist in single_song.artists:
                 artist.singles.append(single_song)
             singles.append(single_song)
-                
+
         return list(songs_map.values()),\
                albums,\
                singles,\
                list(artists_map.values())
+
+    def get_file_url(self, file_id):
+        return '{}/static/file/{}'.format(self.backend, file_id)
