@@ -1,10 +1,10 @@
 class Song:
-    def __init__(self, song_id, name, artists, audio_file_id,
+    def __init__(self, song_id, name, artists, audio_url,
                  album=None, index_in_album=None):
         self.id = song_id
         self.name = name
         self.artists = artists
-        self.audio_file_id = audio_file_id
+        self.audio_url = audio_url
         self.album = album
         self.index_in_album = index_in_album
 

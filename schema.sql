@@ -17,26 +17,24 @@ CREATE TABLE song_artists (
 );
 
 CREATE TABLE album_artists (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id INTEGER PRIMARY KEY,
   artist_id INTEGER NOT NULL,
   album_id INTEGER NOT NULL,
-  time_added int,
   FOREIGN KEY (album_id) REFERENCES albums (id),
   FOREIGN KEY (artist_id) REFERENCES artists (id)
 );
 
 CREATE TABLE album_songs (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id INTEGER PRIMARY KEY,
   song_id INTEGER NOT NULL,
   album_id INTEGER NOT NULL,
   index_in_album int,
-  time_added int,
   FOREIGN KEY (album_id) REFERENCES albums (id),
   FOREIGN KEY (song_id) REFERENCES songs (id)
 );
 
 CREATE TABLE single_songs (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id INTEGER PRIMARY KEY,
   song_id INTEGER NOT NULL,
   image_file_id INTEGER NOT NULL
   year INTEGER NOT NULL,
@@ -45,21 +43,20 @@ CREATE TABLE single_songs (
 );
 
 CREATE TABLE albums (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
   year INTEGER NOT NULL,
-  time_added int,
-  image_file_id INTEGER NOT NULL
-);
-
-CREATE TABLE artists (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL,
+  image_file_id INTEGER NOT NULL,
   time_added int
 );
 
+CREATE TABLE artists (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL
+);
+
 CREATE TABLE artist_images (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id INTEGER PRIMARY KEY,
   image_file_id INTEGER NOT NULL,
   artist_id INTEGER NOT NULL,
   FOREIGN KEY (artist_id) REFERENCES artists (id),
@@ -67,7 +64,7 @@ CREATE TABLE artist_images (
 );
 
 CREATE TABLE liked_songs (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id INTEGER PRIMARY KEY,
   song_id INTEGER NOT NULL,
   time_added int,
   FOREIGN KEY (song_id) REFERENCES songs (id)
