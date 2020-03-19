@@ -1,6 +1,6 @@
 import pyaudio
 import subprocess
-import threading
+from threading import Thread
 import requests
 from music import Song
 
@@ -10,13 +10,14 @@ RATE = 44100    # number of frames per second
 CHANNELS = 2    # each frame has 2 samples because 2 channels
 
 class AudioTask():
-    def __init__(self, url):
+    def __init__(self):
         self.running = True
 
-    def terminate():
+    def terminate(self):
         self.running = False
 
-    def run(self, pyaudio_instance, url, on_progress, on_complete):
+    def run(self, pyaudio_instance, url, initial_position,
+            on_progress, on_complete):
         ffmpeg_stream = subprocess.Popen(["ffmpeg", "-ss", str(initial_position),
                                  "-i", url, "-loglevel",
                                  "panic", "-vn", "-f", "s16le", "pipe:1"],
@@ -31,27 +32,29 @@ class AudioTask():
 
         data = ffmpeg_stream.stdout.read(CHUNK)
 
-        self.progress = 0
+        progress = 0
         while self.running and len(data) > 0:
             stream.write(data)
             increase_in_progress = len(data) / SAMPLE_SIZE / CHANNELS / RATE
-            self.progress = self.progress + increase_in_progress
-            print(self.progress)
+            progress = progress + increase_in_progress
+            on_progress(progress)
             data = ffmpeg_stream.stdout.read(CHUNK)
 
         print('done playing audio {}'.format(url))
         stream.stop_stream()
         stream.close()
-        on_complete()
+        ffmpeg_stream.terminate()
+        if self.running:
+            on_complete()
 
 class MusicPlayer:
     def __init__(self):
         self.playing = False
         self.song_queue = []
         self.ended_song_queue = []
-        self.p = pyaudio.PyAudio()
         self.audio_task = None
         self.audio_task_thread = None
+        self.pyaudio_instance = pyaudio.PyAudio()
 
     def play(self, song):
         if self.song_queue:
@@ -87,26 +90,32 @@ class MusicPlayer:
         self.progress = 0
         self.playing = True
 
-    def start_audio_task(url, initial_position):
+    def start_audio_task(self, url, initial_position):
         if self.audio_task:
             self.audio_task.terminate()
             self.audio_task_thread.join()
 
+        def on_progress(progress):
+            self.progress = progress
+            print(self.progress)
+
         self.audio_task = AudioTask()
         t = Thread(target = self.audio_task.run,
-                   args = (self.p, url,
-                           lambda progress: self.progress = progress,
-                           self.on_song_complete))
+                   args = (self.pyaudio_instance, url, initial_position,
+                           on_progress, self.on_song_complete))
         t.start()
         self.audio_task_thread = t
 
     def terminate(self):
-        self.p.terminate()
         if self.audio_task:
             self.audio_task.terminate()
             self.audio_task_thread.join()
+        self.pyaudio_instance.terminate()
 
     def on_song_complete(self):
+        self.skipToNext()
+
+    def skipToNext(self):
         self.ended_song_queue.insert(0, self.song_queue.pop())
         if not self.song_queue:
             self.song_queue.append(self.ended_song_queue.pop())
