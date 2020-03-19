@@ -1,16 +1,36 @@
 import requests
 import json
 import sqlite3
+import os.path
 from music import Song, Album, Artist
+from pathlib import Path
 
 def get_cache_dir():
-    from pathlib import Path
-    return str(Path.home()) + '/.cache/music_daemon/'
+    path = str(Path.home()) + '/.cache/music_daemon/'
+    Path(path).mkdir(parents=True, exist_ok=True)
+    return path
+
+def get_db_path():
+    return get_cache_dir() + 'music.db'
+
+def get_schema_buffer():
+    project_directory_path = os.path.realpath(
+                os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    with open(os.path.join(project_directory_path, 'schema.sql')) as schema_file:
+        return schema_file.read()
 
 class DBProvider:
     def __init__(self, db_path=get_cache_dir()+'music.db'):
         self.path = db_path
+        should_create_db = False
+        if not Path(self.path).is_file():
+            should_create_db = True
         self.conn = sqlite3.connect(self.path)
+        if should_create_db:
+            self.create_db()
+
+    def create_db(self):
+        self.conn.executescript(get_schema_buffer())
 
     def add_song(self, song_id, name, audio_file_id, duration, bitrate, codec):
         c = self.conn.cursor()
@@ -74,6 +94,44 @@ class DBProvider:
                    (id, song_id, time_added)\
                    VALUES (?, ?, ?)',
                    (row_id, song_id, time_added))
+
+    def add_playback(self, time_started, time_ended, song_id):
+        c = self.conn.cursor()
+        c.execute('INSERT INTO playbacks\
+                   (time_started, time_ended, song_id)\
+                   VALUES (?, ?, ?)',
+                  (time_started, time_ended, song_id))
+        # i guess gotta commit to get the lastrowid since we need it
+        self.commit()
+        return c.lastrowid
+
+    def add_pause(self, time, playback_id):
+        c = self.conn.cursor()
+        c.execute('INSERT INTO pauses\
+                   (time, playback_id)\
+                   VALUES (?, ?)',
+                  (time, playback_id))
+
+    def add_resume(self, time, playback_id):
+        c = self.conn.cursor()
+        c.execute('INSERT INTO resumes\
+                   (time, playback_id)\
+                   VALUES (?, ?)',
+                  (time, playback_id))
+
+    def add_seek(self, time, position, playback_id):
+        c = self.conn.cursor()
+        c.execute('INSERT INTO seeks\
+                   (time, position, playback_id)\
+                   VALUES (?, ?, ?)',
+                  (time, position, playback_id))
+
+    def update_playback_time_ended(self, playback_id, time_ended):
+        c = self.conn.cursor()
+        c.execute('UPDATE playbacks SET\
+                   time_ended = ?\
+                   WHERE id = ?',
+                  (time_ended, playback_id))
 
     def commit(self):
         self.conn.commit()

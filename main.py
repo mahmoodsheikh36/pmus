@@ -9,9 +9,6 @@ if __name__ == '__main__':
     for album in albums:
         print(album.name)
     player = MusicPlayer()
-    #x = threading.Thread(target=another_thread_func, args=(player,))
-    #x.start()
-    #x.join()
     player.play(albums[0].songs[0])
     player.add_to_queue(albums[0].songs[1])
     try:
