@@ -1,21 +1,22 @@
 import sys
 import time
+
 from player import MusicPlayer
 from db import MusicProvider
+from server import Server
 
 if __name__ == '__main__':
     provider = MusicProvider()
     songs, albums, singles, artists = provider.music()
-    for album in albums:
-        print(album.name)
     player = MusicPlayer()
-    player.play(albums[0].songs[0])
-    player.add_to_queue(albums[0].songs[1])
+    server = Server()
+    #player.play(albums[0].songs[0])
+    #player.add_to_queue(albums[0].songs[1])
+    
     try:
-        time.sleep(3)
-        player.skipToNext()
-        time.sleep(3)
+        server.start()
     except KeyboardInterrupt:
         print('Interrupted')
 
+    server.terminate()
     player.terminate()
