@@ -53,14 +53,16 @@ class Server:
                 for song in songs[1:]:
                     self.music_player.add_to_queue(song)
             elif music_object_type == 'album':
+                if len(args[1:]) == 0:
+                    return 'please provide the album\'s id'
                 album_id = int(args[1])
                 album = self.music_library.get_album(album_id)
                 self.music_player.play_album(album)
             else:
                 return 'wrong music object type, allowed types: song, album'
-        elif cmd == 'skip' or cmd == 'skip_to_next':
+        elif cmd == 'next' or cmd == 'next':
             self.music_player.skip_to_next()
-        elif cmd == 'skip_to_prev':
+        elif cmd == 'prev':
             self.music_player.skip_to_prev()
         elif cmd == 'seek':
             position_in_seconds = int(args[0])
@@ -76,6 +78,11 @@ class Server:
                 return songs_txt
             elif music_object_type == 'album':
                 albums_txt = ''
+                for album in self.music_library.albums:
+                    albums_txt += '{} {} - {}\n'.format(album.id,
+                                                        album.name,
+                                                        album.artists[0].name)
+                return albums_txt
             else:
                 return 'wrong music object type, allowed types: song, album'
         elif cmd == 'progress':
