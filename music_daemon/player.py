@@ -2,9 +2,9 @@ import pyaudio
 import subprocess
 import threading
 
-from music import Song
-from utils import current_time
-from db import DBProvider
+from music_daemon.music import Song
+from music_daemon.utils import current_time
+from music_daemon.db import DBProvider
 
 CHUNK = 1024    # number of bytes to read on each iteration
 SAMPLE_SIZE = 2 # each sample is 2 bytes
@@ -67,6 +67,11 @@ class MusicPlayer:
         for song in album.songs[1:]:
             self.add_to_queue(song)
 
+    def play_clear_queue(self, song):
+        self.song_queue.clear()
+        self.ended_song_queue.clear()
+        self.play(song)
+
     def play(self, song, initial_progress=0):
         if self.song_queue:
             self.ended_song_queue.append(self.song_queue.pop())
@@ -127,7 +132,6 @@ class MusicPlayer:
 
     def on_audio_task_progress(self, progress):
         self.progress = progress
-        print(self.progress)
 
     def terminate_audio_task(self):
         if self.audio_task:

@@ -1,10 +1,11 @@
+#!/bin/python
 import sys
 import time
 import traceback
 
-from player import MusicPlayer
-from db import MusicProvider
-from server import Server
+from music_daemon.player import MusicPlayer
+from music_daemon.db import MusicProvider
+from music_daemon.server import Server
 
 if __name__ == '__main__':
     provider = MusicProvider()

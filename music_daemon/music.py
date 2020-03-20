@@ -1,5 +1,5 @@
 class Song:
-    def __init__(self, song_id, name, artists, audio_url,
+    def __init__(self, song_id, name, artists, audio_url, duration,
                  album=None, index_in_album=None):
         self.id = song_id
         self.name = name
@@ -7,6 +7,7 @@ class Song:
         self.audio_url = audio_url
         self.album = album
         self.index_in_album = index_in_album
+        self.duration = duration
 
     def to_map(self, include_artists=True):
         self_map = {}

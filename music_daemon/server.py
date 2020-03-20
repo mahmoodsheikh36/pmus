@@ -44,9 +44,14 @@ class Server:
         elif cmd == 'play':
             music_object_type = args[0]
             if music_object_type == 'song':
-                song_id = int(args[1])
-                song = self.music_library.get_song(song_id)
-                self.music_player.play(song)
+                if len(args[1:]) == 0:
+                    return 'please provide song ids'
+                song_ids = [int(song_id) for song_id in args[1:]]
+                songs = [self.music_library.get_song(song_id)
+                         for song_id in song_ids]
+                self.music_player.play_clear_queue(songs[0])
+                for song in songs[1:]:
+                    self.music_player.add_to_queue(song)
             elif music_object_type == 'album':
                 album_id = int(args[1])
                 album = self.music_library.get_album(album_id)
@@ -60,10 +65,25 @@ class Server:
         elif cmd == 'seek':
             position_in_seconds = int(args[0])
             self.music_player.seek(position_in_seconds)
+        elif cmd == 'list':
+            music_object_type = args[0]
+            if music_object_type == 'song':
+                songs_txt = ''
+                for song in self.music_library.songs:
+                    songs_txt += '{} {} - {}\n'.format(song.id,
+                                                       song.name,
+                                                       song.artists[0].name)
+                return songs_txt
+            elif music_object_type == 'album':
+                albums_txt = ''
+            else:
+                return 'wrong music object type, allowed types: song, album'
+        elif cmd == 'progress':
+            if not self.music_player.current_song():
+                return ''
+            return '{}/{}'.format(
+                    format(self.music_player.progress, '.2f'),
+                    format(self.music_player.current_song().duration, '.2f'))
         else:
             return 'unknown command'
         return 'OK'
-
-class Client:
-    def __init__(self, port=5150):
-

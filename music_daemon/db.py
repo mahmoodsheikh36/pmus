@@ -2,7 +2,7 @@ import requests
 import json
 import sqlite3
 import os.path
-from music import Song, Album, Artist, MusicLibrary
+from music_daemon.music import Song, Album, Artist, MusicLibrary
 from pathlib import Path
 
 def get_cache_dir():
@@ -229,7 +229,8 @@ class MusicProvider:
             song = Song(song_metadata['id'],
                         song_metadata['name'],
                         [],
-                        self.get_file_url(song_metadata['audio_file_id']))
+                        self.get_file_url(song_metadata['audio_file_id']),
+                        song_metadata['duration'])
             songs_map[song.id] = song
             for song_artist in song_artists_map[song.id]:
                 artist = artists_map[song_artist['artist_id']]
