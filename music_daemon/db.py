@@ -230,7 +230,9 @@ class MusicProvider:
                         song_metadata['name'],
                         [],
                         self.get_file_url(song_metadata['audio_file_id']),
-                        song_metadata['duration'])
+                        song_metadata['duration'],
+                        song_metadata['sample_rate'],
+                        song_metadata['channels'])
             songs_map[song.id] = song
             for song_artist in song_artists_map[song.id]:
                 artist = artists_map[song_artist['artist_id']]
