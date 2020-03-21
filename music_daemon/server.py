@@ -110,6 +110,17 @@ class Server:
                 return 'not added yet'
             else:
                 return 'wrong music object type, allowed types: song, album'
+        elif cmd == 'queue':
+            queue_txt = ''
+            for song in reversed(self.music_player.song_queue):
+                queue_txt += '{} {} - {}\n'.format(song.id,
+                                                   song.name,
+                                                   song.artists[0].name)
+            for song in reversed(self.music_player.ended_song_queue):
+                queue_txt += '{} {} - {}\n'.format(song.id,
+                                                   song.name,
+                                                   song.artists[0].name)
+            return queue_txt
         else:
             return 'unknown command'
         return 'OK'
