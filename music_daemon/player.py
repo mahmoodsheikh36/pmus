@@ -72,22 +72,22 @@ class MusicPlayer:
         self.ended_song_queue.clear()
         self.play(song)
 
-    def play(self, song, initial_progress=0):
+    def play(self, song, initial_progress=0, resumed=False):
         if self.song_queue:
             self.ended_song_queue.append(self.song_queue.pop())
         self.song_queue.append(song)
         self.play_url(song.audio_url, initial_progress)
         self.playing = True
-        self.music_monitor.on_play()
+        if not resumed:
+            self.music_monitor.on_play()
 
     def add_to_queue(self, song):
+        was_empty = not self.song_queue
         self.song_queue.insert(0, song)
-        """
-        maybe we should start playing if the player is not already playing
-        and if the queue was empty before adding the song to the queue?
-        maybe not? maybe the user just wants to organize the queue and then
-        tell the player to start playing
-        """
+        if was_empty:
+            self.play_url(song.audio_url, 0)
+            self.playing = True
+            self.music_monitor.on_play()
 
     def clear_queue(self):
         current_song = self.current_song()
@@ -105,7 +105,7 @@ class MusicPlayer:
     def resume(self):
         if self.playing or self.current_song() is None:
             return
-        self.play(self.current_song(), self.progress)
+        self.play(self.current_song(), self.progress, resumed=True)
         self.music_monitor.on_resume()
         self.playing = True
 
