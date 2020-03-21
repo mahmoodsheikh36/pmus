@@ -12,3 +12,5 @@ hide functions and variable that shouldn't be used outside the classes,
 do that to every class in the code
 
 the code is a mess, needs refactoring
+
+liking songs and adding songs and stuff is currently done through communicating directly with the remote database with other scripts, the daemon should have the functionality to do all of that
