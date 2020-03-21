@@ -1,4 +1,4 @@
-import pyaudio
+import sounddevice
 import subprocess
 import threading
 
@@ -16,19 +16,22 @@ class AudioTask():
     def terminate(self):
         self.running = False
 
-    def run(self, pyaudio_instance, url, sample_rate, channels, initial_position,
+    def run(self, url, sample_rate, channels, initial_position,
             on_progress, on_complete):
+        # idk why but some audio files at 96k become distorted, temporary fix
+        if sample_rate > 48000:
+            sample_rate = 48000
         ffmpeg_stream = subprocess.Popen(["ffmpeg", "-ss", str(initial_position),
-                                 "-i", url, "-loglevel",
-                                 "panic", "-vn", "-f", "s16le", "pipe:1"],
+                                 "-i", url, "-loglevel", "panic", "-vn",
+                                 "-f", "s16le", "-acodec", "pcm_s16le", "-ar",
+                                  str(sample_rate), "pipe:1"],
                                   stdout=subprocess.PIPE)
 
-        audio_stream = pyaudio_instance.open(format=pyaudio.paInt16,
-                                             channels=channels,
-                                             rate=sample_rate,
-                                             output=True)
+        audio_stream = sounddevice.RawOutputStream(samplerate=sample_rate,
+                                                   channels=channels,
+                                                   dtype='int16')
 
-        audio_stream.start_stream()
+        audio_stream.start()
 
         data = ffmpeg_stream.stdout.read(CHUNK)
 
@@ -42,7 +45,6 @@ class AudioTask():
                 on_progress(progress)
             data = ffmpeg_stream.stdout.read(CHUNK)
 
-        audio_stream.stop_stream()
         audio_stream.close()
         ffmpeg_stream.terminate()
         if self.running:
@@ -54,7 +56,6 @@ class MusicPlayer:
         self.ended_song_queue = []
         self.audio_task = None
         self.audio_task_thread = None
-        self.pyaudio_instance = pyaudio.PyAudio()
         self.music_monitor = MusicMonitor(self, DBProvider())
         self.progress = None
         self.playing = False
@@ -126,8 +127,7 @@ class MusicPlayer:
         self.terminate_audio_task()
         self.audio_task = AudioTask()
         t = threading.Thread(target = self.audio_task.run,
-                             args = (self.pyaudio_instance, url,
-                                     sample_rate, channels,
+                             args = (url, sample_rate, channels,
                                      initial_position,
                                      self.on_audio_task_progress,
                                      self.on_song_complete))
@@ -152,7 +152,6 @@ class MusicPlayer:
     def terminate(self):
         print('terminating player')
         self.terminate_audio_task()
-        self.pyaudio_instance.terminate()
         self.music_monitor.terminate()
 
     def on_song_complete(self):
