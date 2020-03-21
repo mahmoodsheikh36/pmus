@@ -91,6 +91,25 @@ class Server:
             return '{}/{}'.format(
                     format(self.music_player.progress, '.2f'),
                     format(self.music_player.current_song().duration, '.2f'))
+        elif cmd == 'current':
+            if not self.music_player.current_song():
+                return ''
+            song = self.music_player.current_song()
+            return '{} {} - {}'.format(song.id,
+                                       song.name,
+                                       song.artists[0].name)
+        elif cmd == 'add':
+            music_object_type = args[0]
+            if music_object_type == 'song':
+                song_ids = [int(song_id) for song_id in args[1:]]
+                songs = [self.music_library.get_song(song_id)
+                         for song_id in song_ids]
+                for song in songs:
+                    self.music_player.add_to_queue(song)
+            elif music_object_type == 'album':
+                return 'not added yet'
+            else:
+                return 'wrong music object type, allowed types: song, album'
         else:
             return 'unknown command'
         return 'OK'
