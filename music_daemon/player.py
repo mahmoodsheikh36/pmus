@@ -25,26 +25,26 @@ class AudioTask():
                                  "panic", "-vn", "-f", "s16le", "pipe:1"],
                                   stdout=subprocess.PIPE)
 
-        stream = pyaudio_instance.open(format=pyaudio.paInt16,
+        audio_stream = pyaudio_instance.open(format=pyaudio.paInt16,
                                        channels=CHANNELS,
                                        rate=RATE,
                                        output=True)
 
-        stream.start_stream()
+        audio_stream.start_stream()
 
         data = ffmpeg_stream.stdout.read(CHUNK)
 
         progress = initial_position
         while self.running and len(data) > 0:
-            stream.write(data)
+            audio_stream.write(data)
             increase_in_progress = len(data) / SAMPLE_SIZE / CHANNELS / RATE
             progress = progress + increase_in_progress
             if self.running:
                 on_progress(progress)
             data = ffmpeg_stream.stdout.read(CHUNK)
 
-        stream.stop_stream()
-        stream.close()
+        audio_stream.stop_stream()
+        audio_stream.close()
         ffmpeg_stream.terminate()
         if self.running:
             on_complete()
