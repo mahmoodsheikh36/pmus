@@ -121,6 +121,15 @@ class Server:
                                                    song.name,
                                                    song.artists[0].name)
             return queue_txt
+        elif cmd == 'liked':
+                songs_txt = ''
+                for song in self.music_library.songs:
+                    if not song.is_liked:
+                        continue
+                    songs_txt += '{} {} - {}\n'.format(song.id,
+                                                       song.name,
+                                                       song.artists[0].name)
+                return songs_txt
         else:
             return 'unknown command'
         return 'OK'
