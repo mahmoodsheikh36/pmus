@@ -79,12 +79,24 @@ class Server:
                                                        song.artists[0].name)
                 return songs_txt
             elif music_object_type == 'album':
-                albums_txt = ''
-                for album in self.music_library.albums:
-                    albums_txt += '{} {} - {}\n'.format(album.id,
-                                                        album.name,
-                                                        album.artists[0].name)
-                return albums_txt
+                response = ''
+                # if the album id is given we list it's songs
+                # else we list all the albums
+                if len(args) > 1:
+                    album_id = int(args[1])
+                    album = self.music_library.get_album(album_id)
+                    if album is None:
+                        return ''
+                    for song in album.songs:
+                        response += '{} {} - {}\n'.format(song.id,
+                                                          song.name,
+                                                          song.artists[0].name)
+                else:
+                    for album in self.music_library.albums:
+                        response += '{} {} - {}\n'.format(album.id,
+                                                          album.name,
+                                                          album.artists[0].name)
+                return response
             else:
                 return 'wrong music object type, allowed types: song, album'
         elif cmd == 'progress':
