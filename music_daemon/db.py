@@ -256,6 +256,7 @@ class MusicProvider:
             artists_map[artist.id] = artist
 
         for song_metadata in metadata['songs']:
+            is_liked = False
             song = Song(song_metadata['id'],
                         song_metadata['name'],
                         [],
@@ -263,6 +264,9 @@ class MusicProvider:
                         song_metadata['duration'],
                         song_metadata['sample_rate'],
                         song_metadata['channels'])
+            for liked_song in metadata['liked_songs']:
+                if liked_song['song_id'] == song.id:
+                    song.is_liked = True
             song.seconds_listened = self.get_seconds_listened_to_song(song.id)
             songs_map[song.id] = song
             for song_artist in song_artists_map[song.id]:
@@ -300,7 +304,6 @@ class MusicProvider:
     def get_file_url(self, file_id):
         return '{}/static/file/{}'.format(self.backend, file_id)
 
-    # FIXME: this is wrong, should make use of pauses,seeks,resumes
     def get_seconds_listened_to_song(self, song_id):
         playbacks = self.db_provider.get_playbacks(song_id)
         total_seconds = 0
@@ -308,5 +311,8 @@ class MusicProvider:
             if playback['time_ended'] == -1:
                 continue
             seconds = (playback['time_ended'] - playback['time_started']) / 1000
+            #pauses = self.db_provider.get_pauses(playback['id'])
+            #resumes = self.db_provider.get_pauses(playback['id'])
+            #seeks = self.db_provider.get_resumes(playback['id'])
             total_seconds += seconds
         return total_seconds
