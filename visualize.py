@@ -2,7 +2,7 @@
 import matplotlib.pyplot as plt
 from music_daemon.db import MusicProvider
 
-ENTRY_COUNT = 5
+ENTRY_COUNT = 4
 
 def init_array(size):
     arr = []
@@ -61,21 +61,37 @@ if __name__ == '__main__':
     plt.subplots_adjust(hspace=0.5)
 
     # plot songs
-    songs_graph.bar(['{} - {}'.format(song.name, song.artists[0].name)
+    songs_graph_color = (0.9, 0.4, 0.6)
+    songs_graph.bar(['{}\n{}'.format(song.name, song.artists[0].name)
                      for song in top_songs],
-                    [song.seconds_listened for song in top_songs])
-    songs_graph.set(xlabel='songs', ylabel='seconds listened')
+                    [song.seconds_listened for song in top_songs],
+                    color=songs_graph_color)
+    songs_graph.set_xlabel('songs', fontsize=18, color=songs_graph_color,
+                            weight='bold')
+    songs_graph.set_ylabel('seconds listened', fontsize=18, color=songs_graph_color,
+                            weight='bold')
 
     # plot albums
-    albums_graph.bar(['{} - {}'.format(album.name, album.artists[0].name)
+    albums_graph_color = (0.5, 0.5, 0.4)
+    albums_graph.bar(['{}\n{}'.format(album.name, album.artists[0].name)
                       for album in top_albums],
-                     [album.seconds_listened() for album in top_albums])
-    albums_graph.set(xlabel='albums', ylabel='seconds listened')
+                     [album.seconds_listened() for album in top_albums],
+                     color=albums_graph_color)
+    albums_graph.set_xlabel('albums', fontsize=18, color=albums_graph_color,
+                            weight='bold')
+    albums_graph.set_ylabel('seconds listened', fontsize=18, color=albums_graph_color,
+                            weight='bold')
 
     # plot artists
+    artists_graph_color=(0.3, 0.3, 0.9)
     artists_graph.bar([artist.name for artist in top_artists],
-                      [artist.seconds_listened() for artist in top_artists])
-    artists_graph.set(xlabel='artists', ylabel='seconds listened')
+                      [artist.seconds_listened() for artist in top_artists],
+                      color=artists_graph_color)
+    artists_graph.set_xlabel('artists', fontsize=18, color=artists_graph_color,
+                            weight='bold')
+    artists_graph.set_ylabel('seconds listened', fontsize=18, color=artists_graph_color,
+                            weight='bold')
 
-    plt.suptitle('listening data since 20/3/2020')
+    plt.suptitle('music_daemon playback data visual representation', fontweight='bold',
+                            fontsize=25)
     plt.show()
