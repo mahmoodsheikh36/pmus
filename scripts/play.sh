@@ -10,4 +10,6 @@ ids=""
 for id in "$(echo "$dmenu_out" | cut -d ' ' -f1)"; do
     ids="$ids $id"
 done
+
+if [ "$music_object_type" = "liked" ]; then music_object_type="song"; fi
 music_daemon_cmd.sh $action $music_object_type $ids
