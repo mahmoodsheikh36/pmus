@@ -72,15 +72,14 @@ class MusicPlayer:
         self.ended_song_queue.clear()
         self.play(song)
 
-    def play(self, song, initial_progress=0, resumed=False):
+    def play(self, song, initial_progress=0):
         if self.song_queue:
             self.ended_song_queue.append(self.song_queue.pop())
         self.song_queue.append(song)
         self.play_url(song.audio_url, song.sample_rate,
                       song.channels, initial_progress)
         self.playing = True
-        if not resumed:
-            self.music_monitor.on_play()
+        self.music_monitor.on_play()
 
     def add_to_queue(self, song):
         was_empty = not self.song_queue
@@ -106,9 +105,11 @@ class MusicPlayer:
     def resume(self):
         if self.playing or self.current_song() is None:
             return
-        self.play(self.current_song(), self.progress, resumed=True)
-        self.music_monitor.on_resume()
+        song = self.current_song()
+        self.play_url(song.audio_url, song.sample_rate,
+                      song.channels, self.progress)
         self.playing = True
+        self.music_monitor.on_resume()
 
     def seek(self, position_in_seconds):
         if not self.current_song():
