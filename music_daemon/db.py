@@ -19,13 +19,19 @@ def get_schema_buffer():
     with open(os.path.join(project_directory_path, 'schema.sql')) as schema_file:
         return schema_file.read()
 
+def dict_factory(cursor, row):
+    d = {}
+    for idx, col in enumerate(cursor.description):
+        d[col[0]] = row[idx]
+    return d
+
 class DBProvider:
     def __init__(self, db_path=get_cache_dir()+'music.db'):
         self.path = db_path
         should_create_db = False
         if not Path(self.path).is_file():
             should_create_db = True
-        self.conn = sqlite3.connect(self.path)
+        self.conn = self.get_new_conn()
         if should_create_db:
             self.create_db()
 
@@ -137,8 +143,32 @@ class DBProvider:
                   (time, position, playback_id))
         conn.commit()
 
+    def get_playbacks(self, song_id):
+        c = self.conn.cursor()
+        return c.execute('SELECT * FROM playbacks WHERE song_id = ?',
+                         (song_id,)).fetchall()
+
+    def get_pauses(self, playback_id):
+        c = self.conn.cursor()
+        return c.execute('SELECT * FROM pauses WHERE playback_id = ?',
+                         (playback_id,)).fetchall()
+
+    def get_resumes(self, playback_id):
+        c = self.conn.cursor()
+        return c.execute('SELECT * FROM resumes WHERE playback_id = ?',
+                         (playback_id,)).fetchall()
+        return c.lastrowid
+
+    def get_seeks(self, playback_id):
+        c = self.conn.cursor()
+        return c.execute('SELECT * FROM seeks WHERE playback_id = ?',
+                         (playback_id,)).fetchall()
+        return c.lastrowid
+
     def get_new_conn(self):
-        return sqlite3.connect(self.path)
+        conn = sqlite3.connect(self.path)
+        conn.row_factory = dict_factory
+        return conn
 
     """
     always use a new connection when updating playbacks because this
@@ -161,7 +191,7 @@ class DBProvider:
 
 class MusicProvider:
     def __init__(self, username=None, password=None, backend_url='http://localhost'):
-        #self.db_provider = DBProvider()
+        self.db_provider = DBProvider()
         self.backend = backend_url
         self.username = username
         self.password = password
@@ -233,6 +263,7 @@ class MusicProvider:
                         song_metadata['duration'],
                         song_metadata['sample_rate'],
                         song_metadata['channels'])
+            song.seconds_listened = self.get_seconds_listened_to_song(song.id)
             songs_map[song.id] = song
             for song_artist in song_artists_map[song.id]:
                 artist = artists_map[song_artist['artist_id']]
@@ -268,3 +299,14 @@ class MusicProvider:
 
     def get_file_url(self, file_id):
         return '{}/static/file/{}'.format(self.backend, file_id)
+
+    # FIXME: this is wrong, should make use of pauses,seeks,resumes
+    def get_seconds_listened_to_song(self, song_id):
+        playbacks = self.db_provider.get_playbacks(song_id)
+        total_seconds = 0
+        for playback in playbacks:
+            if playback['time_ended'] == -1:
+                continue
+            seconds = (playback['time_ended'] - playback['time_started']) / 1000
+            total_seconds += seconds
+        return total_seconds
