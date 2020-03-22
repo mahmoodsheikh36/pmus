@@ -69,9 +69,11 @@ class Server:
             self.music_player.seek(position_in_seconds)
         elif cmd == 'list':
             music_object_type = args[0]
-            if music_object_type == 'song':
+            if music_object_type == 'song' or music_object_type == 'liked':
                 songs_txt = ''
                 for song in self.music_library.songs:
+                    if music_object_type == 'liked' and not song.is_liked:
+                        continue
                     songs_txt += '{} {} - {}\n'.format(song.id,
                                                        song.name,
                                                        song.artists[0].name)
@@ -121,15 +123,6 @@ class Server:
                                                    song.name,
                                                    song.artists[0].name)
             return queue_txt
-        elif cmd == 'liked':
-                songs_txt = ''
-                for song in self.music_library.songs:
-                    if not song.is_liked:
-                        continue
-                    songs_txt += '{} {} - {}\n'.format(song.id,
-                                                       song.name,
-                                                       song.artists[0].name)
-                return songs_txt
         else:
             return 'unknown command'
         return 'OK'
