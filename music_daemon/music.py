@@ -1,6 +1,6 @@
 class Song:
     def __init__(self, song_id, name, artists, audio_url, duration, sample_rate,
-                 channels, album=None, index_in_album=None):
+                 channels, seconds_listened=None, album=None, index_in_album=None):
         self.id = song_id
         self.name = name
         self.artists = artists
@@ -10,6 +10,7 @@ class Song:
         self.duration = duration
         self.sample_rate = sample_rate
         self.channels = channels
+        self.seconds_listened = seconds_listened
 
     def to_map(self, include_artists=True):
         self_map = {}
@@ -37,12 +38,26 @@ class Album:
         self.image_file_id = image_file_id
         self.songs = songs
 
+    def seconds_listened(self):
+        total_seconds = 0
+        for song in self.songs:
+            total_seconds += song.seconds_listened
+        return total_seconds
+
 class Artist:
     def __init__(self, artist_id, name, albums, singles):
         self.id = artist_id
         self.name = name
         self.albums = albums
         self.singles = singles
+
+    def seconds_listened(self):
+        total_seconds = 0
+        for album in self.albums:
+            total_seconds += album.seconds_listened()
+        for single in self.singles:
+            total_seconds += single.seconds_listened
+        return total_seconds
 
 class MusicLibrary:
     def __init__(self, songs, artists, albums, singles):
