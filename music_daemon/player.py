@@ -1,6 +1,7 @@
 import sounddevice
 import subprocess
 import threading
+import os
 
 from music_daemon.music import Song
 from music_daemon.utils import current_time
@@ -46,7 +47,7 @@ class AudioTask():
             data = ffmpeg_stream.stdout.read(CHUNK)
 
         audio_stream.close()
-        ffmpeg_stream.terminate()
+        ffmpeg_stream.kill()
         if self.running:
             on_complete()
 
