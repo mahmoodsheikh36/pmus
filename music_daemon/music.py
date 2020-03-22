@@ -1,6 +1,7 @@
 class Song:
     def __init__(self, song_id, name, artists, audio_url, duration, sample_rate,
-                 channels, seconds_listened=None, album=None, index_in_album=None):
+                 channels, is_liked=False, seconds_listened=None,
+                 album=None, index_in_album=None):
         self.id = song_id
         self.name = name
         self.artists = artists
@@ -11,6 +12,7 @@ class Song:
         self.sample_rate = sample_rate
         self.channels = channels
         self.seconds_listened = seconds_listened
+        self.is_liked = is_liked
 
     def to_map(self, include_artists=True):
         self_map = {}
