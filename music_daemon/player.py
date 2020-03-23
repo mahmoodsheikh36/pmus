@@ -7,7 +7,7 @@ from music_daemon.music import Song
 from music_daemon.utils import current_time
 from music_daemon.db import DBProvider
 
-CHUNK = 1024    # number of bytes to read on each iteration
+CHUNK = 2048    # number of bytes to read on each iteration
 SAMPLE_SIZE = 2 # each sample is 2 bytes (-f s16le with ffmpeg)
 
 class AudioTask():
@@ -47,7 +47,9 @@ class AudioTask():
             data = ffmpeg_stream.stdout.read(CHUNK)
 
         audio_stream.close()
+        ffmpeg_stream.terminate()
         ffmpeg_stream.kill()
+        ffmpeg_stream.wait()
         if self.running:
             on_complete()
 
