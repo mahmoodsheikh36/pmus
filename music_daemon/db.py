@@ -157,13 +157,11 @@ class DBProvider:
         c = self.conn.cursor()
         return c.execute('SELECT * FROM resumes WHERE playback_id = ?',
                          (playback_id,)).fetchall()
-        return c.lastrowid
 
     def get_seeks(self, playback_id):
         c = self.conn.cursor()
         return c.execute('SELECT * FROM seeks WHERE playback_id = ?',
                          (playback_id,)).fetchall()
-        return c.lastrowid
 
     def get_new_conn(self):
         conn = sqlite3.connect(self.path)
@@ -306,13 +304,20 @@ class MusicProvider:
 
     def get_seconds_listened_to_song(self, song_id):
         playbacks = self.db_provider.get_playbacks(song_id)
-        total_seconds = 0
+        total_milliseconds = 0
         for playback in playbacks:
             if playback['time_ended'] == -1:
                 continue
-            seconds = (playback['time_ended'] - playback['time_started']) / 1000
-            #pauses = self.db_provider.get_pauses(playback['id'])
-            #resumes = self.db_provider.get_pauses(playback['id'])
-            #seeks = self.db_provider.get_resumes(playback['id'])
-            total_seconds += seconds
-        return total_seconds
+            pauses = self.db_provider.get_pauses(playback['id'])
+            resumes = self.db_provider.get_resumes(playback['id'])
+            if abs(len(pauses) - len(resumes)) > 1:
+                continue
+            milliseconds = playback['time_ended'] - playback['time_started']
+            for i in range(len(pauses) - 1):
+                pause = pauses[i]
+                resume = resumes[i]
+                milliseconds -= resume['time'] - pause['time']
+            if len(pauses) > len(resumes):
+                milliseconds -= playback['time_ended'] - pauses[-1]['time']
+            total_milliseconds += milliseconds
+        return total_milliseconds / 1000
