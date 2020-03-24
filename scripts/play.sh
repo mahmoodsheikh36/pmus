@@ -13,6 +13,7 @@ if [ $rofi_exit_code -eq 10 ] && [ "$music_object_type" = "album" ]; then
     id=$(echo "$rofi_out" | cut -d ' ' -f1 | head -1)
     rofi_out="$(music_daemon_cmd.sh list ${music_object_type} $id\
         | sort -n | rofi -dmenu -i -p songs -multi-select)"
+    rofi_exit_code=$?
     music_object_type="song"
 fi
 
