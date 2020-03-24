@@ -2,49 +2,47 @@
 import matplotlib.pyplot as plt
 from music_daemon.db import MusicProvider
 
-ENTRY_COUNT = 7
+ENTRY_COUNT = 4
 
-def init_array(size):
-    arr = []
-    for i in range(size):
-        arr.append(None)
-    return arr
+def get_largest_elements(list_to_sort, limit, compare):
+    mylist = list_to_sort.copy()
+    final_list = []
+    for i in range(limit):
+        biggest = mylist[0]
+        for j in range(len(mylist)):
+            element = mylist[j]
+            if compare(element, biggest):
+                biggest = element
+        final_list.append(biggest)
+        mylist.remove(biggest)
+    return final_list
 
 def get_top_songs(library, limit):
-    top_songs = init_array(limit)
-    for song in library.songs:
-        for i in range(len(top_songs)):
-            if song in top_songs:
-                i = len(top_songs) + 1
-                continue
-            if top_songs[i] is None or\
-                    song.seconds_listened > top_songs[i].seconds_listened:
-                top_songs[i] = song
-    return top_songs
+    def compare(song1, song2):
+        if song1.seconds_listened > song2.seconds_listened:
+            return True
+        return False
+    return get_largest_elements(library.songs,
+            limit,
+            compare)
 
 def get_top_albums(library, limit):
-    top_albums = init_array(limit)
-    for album in library.albums:
-        for i in range(len(top_albums)):
-            if album in top_albums:
-                i = len(top_albums) + 1
-                continue
-            if top_albums[i] is None or\
-                    album.seconds_listened() > top_albums[i].seconds_listened():
-                top_albums[i] = album
-    return top_albums
+    def compare(album1, album2):
+        if album1.seconds_listened() > album2.seconds_listened():
+            return True
+        return False
+    return get_largest_elements(library.albums,
+            limit,
+            compare)
 
 def get_top_artists(library, limit):
-    top_artists = init_array(limit)
-    for artist in library.artists:
-        for i in range(len(top_artists)):
-            if artist in top_artists:
-                i = len(top_artists) + 1
-                continue
-            if top_artists[i] is None or\
-                    artist.seconds_listened() > top_artists[i].seconds_listened():
-                top_artists[i] = artist
-    return top_artists
+    def compare(artist1, artist2):
+        if artist1.seconds_listened() > artist2.seconds_listened():
+            return True
+        return False
+    return get_largest_elements(library.artists,
+            limit,
+            compare)
 
 if __name__ == '__main__':
     provider = MusicProvider()
