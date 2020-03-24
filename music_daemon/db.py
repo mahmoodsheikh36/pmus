@@ -313,7 +313,7 @@ class MusicProvider:
             if abs(len(pauses) - len(resumes)) > 1:
                 continue
             milliseconds = playback['time_ended'] - playback['time_started']
-            for i in range(len(pauses) - 1):
+            for i in range(len(resumes)):
                 pause = pauses[i]
                 resume = resumes[i]
                 milliseconds -= resume['time'] - pause['time']
