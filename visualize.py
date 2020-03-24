@@ -1,8 +1,8 @@
-#!/bin/python
+#!/usr/bin/python3
 import matplotlib.pyplot as plt
 from music_daemon.db import MusicProvider
 
-ENTRY_COUNT = 4
+ENTRY_COUNT = 7
 
 def init_array(size):
     arr = []
