@@ -1,4 +1,5 @@
 import socket
+import traceback
 
 class Server:
     def __init__(self, music_player, music_library, port=5150):
@@ -16,14 +17,15 @@ class Server:
         while True:
             if self.terminated:
                 return
-            client_socket, addr = self.socket.accept()
-            message = client_socket.recv(1024)
-            #try:
-            response = self.handle_message(message.decode())
-            #except Exception as e:
-            #    response = 'error handling message'
-            client_socket.sendall(response.encode())
-            client_socket.close()
+            try:
+                client_socket, addr = self.socket.accept()
+                message = client_socket.recv(1024)
+                response = self.handle_message(message.decode())
+                client_socket.sendall(response.encode())
+                client_socket.close()
+            except Exception as e:
+                traceback.print_tb(e.__traceback__)
+                print(e)
 
     def terminate(self):
         print('terminating server')
