@@ -92,6 +92,6 @@ if __name__ == '__main__':
     artists_graph.set_ylabel('seconds listened', fontsize=18, color=artists_graph_color,
                             weight='bold')
 
-    plt.suptitle('music_daemon playback data visual representation', fontweight='bold',
+    plt.suptitle('playback data visual representation', fontweight='bold',
                             fontsize=25)
     plt.show()
