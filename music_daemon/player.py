@@ -174,16 +174,27 @@ class MusicPlayer:
         self.music_monitor.on_skip()
 
     def skip_to_prev(self):
-        if not self.ended_song_queue:
-            return
-        song_to_play = self.ended_song_queue[0]
-        self.ended_song_queue[0] = self.song_queue.pop()
-        self.song_queue.append(song_to_play)
-        self.play_url(self.song_queue[-1].audio_url,
-                      self.song_queue[-1].sample_rate,
-                      self.song_queue[-1].channels)
-        self.playing = True
-        self.music_monitor.on_skip()
+        if self.progress > 5:
+            self.play_url(self.song_queue[-1].audio_url,
+                          self.song_queue[-1].sample_rate,
+                          self.song_queue[-1].channels)
+            self.playing = True
+            self.music_monitor.on_seek()
+        else:
+            if not self.ended_song_queue:
+                if not self.song_queue:
+                    return
+                song_to_play = self.song_queue.pop(0)
+                self.ended_song_queue.insert(0, self.song_queue.pop())
+            else:
+                song_to_play = self.ended_song_queue[0]
+                self.ended_song_queue[0] = self.song_queue.pop()
+            self.song_queue.append(song_to_play)
+            self.play_url(self.song_queue[-1].audio_url,
+                          self.song_queue[-1].sample_rate,
+                          self.song_queue[-1].channels)
+            self.playing = True
+            self.music_monitor.on_skip()
 
     def current_song(self):
         if self.song_queue:
