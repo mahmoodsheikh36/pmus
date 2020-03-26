@@ -155,6 +155,7 @@ class Server:
         elif cmd == 'like':
             if len(args) == 0:
                 yield 'you didnt provide the songs id'
+                return
             song_id = int(args[0])
             self.music_provider.like_song(self.music_provider.songs[song_id])
         else:
