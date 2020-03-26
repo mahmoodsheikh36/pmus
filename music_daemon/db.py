@@ -13,8 +13,11 @@ from music_daemon.utils import current_time
 lock = threading.Lock()
 AUDIO_FILE_EXTENSIONS = ['mp3', 'flac', 'opus', 'm4a']
 
+def get_home_dir():
+    return str(Path.home()) + '/'
+
 def get_cache_dir():
-    path = str(Path.home()) + '/.cache/music_daemon/'
+    path = get_home_dir() + '.cache/music_daemon/'
     Path(path).mkdir(parents=True, exist_ok=True)
     return path
 
@@ -242,14 +245,18 @@ class DBProvider:
         return self.cursor().execute('SELECT * FROM album_songs').fetchall()
 
     def is_song_liked(self, song_id):
-        return self.cursor().execute('SELECT * FROM liked_songs\
-                                      WHERE song_id = ?', (song_id,)) is not None
+        liked_song_row = self.cursor().execute('SELECT * FROM liked_songs\
+                                      WHERE song_id = ?', (song_id,)).fetchone()
+        return liked_song_row is not None
+
+    def get_liked_songs(self):
+        return self.cursor().execute('SELECT * FROM liked_songs').fetchall()
 
     def commit(self):
         self.conn.commit()
 
 class MusicProvider:
-    def __init__(self, music_dir):
+    def __init__(self, music_dir=get_home_dir()+'/music'):
         self.dir = music_dir
         self.db_provider = DBProvider()
         self.songs = {}
@@ -264,6 +271,7 @@ class MusicProvider:
         db_song_artists = self.db_provider.get_song_artists()
         db_album_artists = self.db_provider.get_album_artists()
         db_album_songs = self.db_provider.get_album_songs()
+        db_liked_songs = self.db_provider.get_liked_songs()
 
         for db_artist in db_artists:
             artist = Artist(db_artist['id'], db_artist['name'], [], [])
@@ -295,6 +303,10 @@ class MusicProvider:
             album_id = db_album_song['album_id']
             self.albums[album_id].songs.append(self.songs[song_id])
             self.songs[song_id].album = self.albums[album_id]
+
+        for db_liked_song in db_liked_songs:
+            song_id = db_liked_song['song_id']
+            self.songs[song_id].is_liked = True
 
     def on_audio_file_found(self, filepath):
         print(filepath)
@@ -382,6 +394,9 @@ class MusicProvider:
 
     def get_albums_list(self):
         return list(self.albums.values())
+
+    def get_artists_list(self):
+        return list(self.artists.values())
 
     def like_song(self, song):
         if self.db_provider.is_song_liked(song.id):
