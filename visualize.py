@@ -17,40 +17,39 @@ def get_largest_elements(list_to_sort, limit, compare):
         mylist.remove(biggest)
     return final_list
 
-def get_top_songs(library, limit):
+def get_top_songs(provider, limit):
     def compare(song1, song2):
         if song1.seconds_listened > song2.seconds_listened:
             return True
         return False
-    return get_largest_elements(library.songs,
+    return get_largest_elements(provider.get_songs_list(),
             limit,
             compare)
 
-def get_top_albums(library, limit):
+def get_top_albums(provider, limit):
     def compare(album1, album2):
         if album1.seconds_listened() > album2.seconds_listened():
             return True
         return False
-    return get_largest_elements(library.albums,
+    return get_largest_elements(provider.get_albums_list(),
             limit,
             compare)
 
-def get_top_artists(library, limit):
+def get_top_artists(provider, limit):
     def compare(artist1, artist2):
         if artist1.seconds_listened() > artist2.seconds_listened():
             return True
         return False
-    return get_largest_elements(library.artists,
+    return get_largest_elements(provider.get_artists_list(),
             limit,
             compare)
 
 if __name__ == '__main__':
     provider = MusicProvider()
-    library = provider.music()
 
-    top_albums = get_top_albums(library, ENTRY_COUNT)
-    top_songs = get_top_songs(library, ENTRY_COUNT)
-    top_artists = get_top_artists(library, ENTRY_COUNT)
+    top_albums = get_top_albums(provider, ENTRY_COUNT)
+    top_songs = get_top_songs(provider, ENTRY_COUNT)
+    top_artists = get_top_artists(provider, ENTRY_COUNT)
 
     # here starts matplotlib
     #plt.figure(figsize=(1, 1))
