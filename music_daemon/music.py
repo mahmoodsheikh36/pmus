@@ -1,6 +1,6 @@
 class Song:
-    def __init__(self, song_id, name, artists, audio_url, duration, sample_rate,
-                 channels, is_liked=False, seconds_listened=None,
+    def __init__(self, song_id, audio_url, name, artists, duration,
+                 is_liked=False, seconds_listened=None,
                  album=None, index_in_album=None):
         self.id = song_id
         self.name = name
@@ -9,8 +9,6 @@ class Song:
         self.album = album
         self.index_in_album = index_in_album
         self.duration = duration
-        self.sample_rate = sample_rate
-        self.channels = channels
         self.seconds_listened = seconds_listened
         self.is_liked = is_liked
 
@@ -31,13 +29,11 @@ class Song:
         return self.album is None
 
 class Album:
-    def __init__(self, album_id, name, songs, artists, year,
-                 image_file_id):
+    def __init__(self, album_id, name, songs, artists, year):
         self.id = album_id
         self.name = name
         self.artists = artists
         self.year = year
-        self.image_file_id = image_file_id
         self.songs = songs
 
     def seconds_listened(self):
@@ -60,22 +56,3 @@ class Artist:
         for single in self.singles:
             total_seconds += single.seconds_listened
         return total_seconds
-
-class MusicLibrary:
-    def __init__(self, songs, artists, albums, singles):
-        self.songs = songs
-        self.artists = artists
-        self.albums = albums
-        self.singles = singles
-
-    def get_song(self, song_id):
-        for song in self.songs:
-            if song.id == song_id:
-                return song
-        return None
-
-    def get_album(self, album_id):
-        for album in self.albums:
-            if album.id == album_id:
-                return album
-        return None

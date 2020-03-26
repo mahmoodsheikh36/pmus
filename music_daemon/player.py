@@ -17,15 +17,15 @@ class AudioTask():
     def terminate(self):
         self.running = False
 
-    def run(self, url, sample_rate, channels, initial_position,
-            on_progress, on_complete):
+    def run(self, url, initial_position, on_progress, on_complete):
         # idk why but some audio files at 96k become distorted, temporary fix
-        if sample_rate > 48000:
-            sample_rate = 48000
+        sample_rate = 44100
+        channels = 2
         ffmpeg_stream = subprocess.Popen(["ffmpeg", "-ss", str(initial_position),
                                  "-i", url, "-loglevel", "panic", "-vn",
                                  "-f", "s16le", "-acodec", "pcm_s16le", "-ar",
-                                  str(sample_rate), "pipe:1"],
+                                  str(sample_rate), "-ac", str(channels),
+                                  "pipe:1"],
                                   stdout=subprocess.PIPE)
 
         audio_stream = sounddevice.RawOutputStream(samplerate=sample_rate,
@@ -79,8 +79,7 @@ class MusicPlayer:
         if self.song_queue:
             self.ended_song_queue.append(self.song_queue.pop())
         self.song_queue.append(song)
-        self.play_url(song.audio_url, song.sample_rate,
-                      song.channels, initial_progress)
+        self.play_url(song.audio_url, initial_progress)
         self.playing = True
         self.music_monitor.on_play()
 
@@ -88,7 +87,7 @@ class MusicPlayer:
         was_empty = not self.song_queue
         self.song_queue.insert(0, song)
         if was_empty:
-            self.play_url(song.audio_url, song.sample_rate, song.channels, 0)
+            self.play_url(song.audio_url)
             self.playing = True
             self.music_monitor.on_play()
 
@@ -109,30 +108,25 @@ class MusicPlayer:
         if self.playing or self.current_song() is None:
             return
         song = self.current_song()
-        self.play_url(song.audio_url, song.sample_rate,
-                      song.channels, self.progress)
+        self.play_url(song.audio_url, self.progress)
         self.playing = True
         self.music_monitor.on_resume()
 
     def seek(self, position_in_seconds):
         if not self.current_song():
             return
-        self.play_url(self.current_song().audio_url,
-                      self.current_song().sample_rate,
-                      self.current_song().channels,
-                      position_in_seconds)
+        self.play_url(self.current_song().audio_url, position_in_seconds)
         self.music_monitor.on_seek()
 
-    def play_url(self, url, sample_rate, channels, initial_position=0):
+    def play_url(self, url, initial_position=0):
         self.progress = initial_position
-        self.start_audio_task(url, sample_rate, channels, initial_position)
+        self.start_audio_task(url, initial_position)
 
-    def start_audio_task(self, url, sample_rate, channels, initial_position):
+    def start_audio_task(self, url, initial_position):
         self.terminate_audio_task()
         self.audio_task = AudioTask()
         t = threading.Thread(target = self.audio_task.run,
-                             args = (url, sample_rate, channels,
-                                     initial_position,
+                             args = (url, initial_position,
                                      self.on_audio_task_progress,
                                      self.on_song_complete))
         t.start()
@@ -167,17 +161,13 @@ class MusicPlayer:
         self.ended_song_queue.insert(0, self.song_queue.pop())
         if not self.song_queue:
             self.song_queue.append(self.ended_song_queue.pop())
-        self.play_url(self.song_queue[-1].audio_url,
-                      self.song_queue[-1].sample_rate,
-                      self.song_queue[-1].channels)
+        self.play_url(self.song_queue[-1].audio_url)
         self.playing = True
         self.music_monitor.on_skip()
 
     def skip_to_prev(self):
         if self.progress > 5:
-            self.play_url(self.song_queue[-1].audio_url,
-                          self.song_queue[-1].sample_rate,
-                          self.song_queue[-1].channels)
+            self.play_url(self.song_queue[-1].audio_url)
             self.playing = True
             self.music_monitor.on_seek()
         else:
@@ -190,9 +180,7 @@ class MusicPlayer:
                 song_to_play = self.ended_song_queue[0]
                 self.ended_song_queue[0] = self.song_queue.pop()
             self.song_queue.append(song_to_play)
-            self.play_url(self.song_queue[-1].audio_url,
-                          self.song_queue[-1].sample_rate,
-                          self.song_queue[-1].channels)
+            self.play_url(self.song_queue[-1].audio_url)
             self.playing = True
             self.music_monitor.on_skip()
 
