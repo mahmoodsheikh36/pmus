@@ -30,6 +30,8 @@ class AudioTask():
 
         audio_stream = sounddevice.RawOutputStream(samplerate=sample_rate,
                                                    channels=channels,
+                                                   # not sure if blocksize arg improves things
+                                                   blocksize=int(CHUNK / SAMPLE_SIZE),
                                                    dtype='int16')
 
         audio_stream.start()
