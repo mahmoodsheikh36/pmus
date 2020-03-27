@@ -11,8 +11,9 @@ from music_daemon.server import Server
 
 if __name__ == '__main__':
     provider = MusicProvider('/home/mahmooz/music/')
-    provider.find_music()
     provider.load_music()
+    #provider.find_music()
+    #provider.load_music()
     player = MusicPlayer()
     server = Server(player, provider)
 
