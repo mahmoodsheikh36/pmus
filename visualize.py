@@ -46,6 +46,7 @@ def get_top_artists(provider, limit):
 
 if __name__ == '__main__':
     provider = MusicProvider()
+    provider.load_music()
 
     top_albums = get_top_albums(provider, ENTRY_COUNT)
     top_songs = get_top_songs(provider, ENTRY_COUNT)
