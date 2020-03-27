@@ -4,7 +4,7 @@ import threading
 import os
 
 from music_daemon.music import Song
-from music_daemon.utils import current_time
+from music_daemon.utils import current_time, file_exists
 from music_daemon.db import DBProvider
 
 CHUNK = 2048    # number of bytes to read on each iteration
@@ -78,6 +78,8 @@ class MusicPlayer:
         self.play(song)
 
     def play(self, song, initial_progress=0):
+        if not file_exists(song.audio_url):
+            return
         if self.song_queue:
             self.ended_song_queue.append(self.song_queue.pop())
         self.song_queue.append(song)
