@@ -288,6 +288,9 @@ class MusicProvider:
             song_id = db_liked_song['song_id']
             self.songs[song_id].is_liked = True
 
+        for song in self.songs.values():
+            song.seconds_listened = self.get_seconds_listened_to_song(song.id)
+
     def on_audio_file_found(self, filepath):
         print(filepath)
         audio_format = get_audio_format(filepath)
