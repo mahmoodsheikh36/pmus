@@ -18,3 +18,5 @@ liking songs and adding songs and stuff is currently done through communicating 
 the program doesnt close the database connections when its terminated, dunno if this matters when using sqlite
 
 when listing songs, sort them by last listened to
+
+the process of finding music and adding it to the database could be much much faster if we first load all music data into memory and then saving it to the sqlite database instead of executing many database queries in a loop
