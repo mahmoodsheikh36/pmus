@@ -8,7 +8,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from music_daemon.ffmpeg import get_audio_format
 from music_daemon.music import Song, Album, Artist
-from music_daemon.utils import current_time
+from music_daemon.utils import current_time, file_exists
 
 lock = threading.Lock()
 AUDIO_FILE_EXTENSIONS = ['mp3', 'flac', 'opus', 'm4a']
@@ -202,6 +202,11 @@ class DBProvider:
                                       WHERE artist_id = ?)',
                                      (album_name, artist_id)).fetchone()
 
+    def get_album_song_by_idx(self, album_id, idx_in_album):
+        return self.cursor().execute('SELECT * FROM album_songs WHERE album_id = ? AND\
+                                      index_in_album = ?',
+                                     (album_id, idx_in_album)).fetchone()
+
     def get_song_by_url(self, url):
         return self.cursor().execute('SELECT * FROM songs WHERE audio_url = ?',
                                      (url,)).fetchone()
@@ -288,6 +293,16 @@ class MusicProvider:
             song_id = db_liked_song['song_id']
             self.songs[song_id].is_liked = True
 
+        for album in list(self.albums.values()):
+            album_deleted = True
+            for song in album.songs:
+                if file_exists(song.audio_url):
+                    album_deleted = False
+            if album_deleted:
+                del self.albums[album.id]
+                for song in album.songs:
+                    del self.songs[song.id]
+
         for song in self.songs.values():
             song.seconds_listened = self.get_seconds_listened_to_song(song.id)
 
@@ -316,6 +331,9 @@ class MusicProvider:
                 db_artists.append(db_artist)
 
             if 'album' in tags:
+                if not 'track' in tags:
+                    return
+                idx_in_album = tags['track'].split('/')[0]
                 album_name = tags['album']
                 album_year = None
                 if 'year' in tags:
@@ -337,11 +355,8 @@ class MusicProvider:
                     print('added album {}'.format(album_name))
                 else:
                     album_id = db_album['id']
-                idx_in_album = None
-                if 'track' in tags:
-                    idx_in_album = tags['track']
-                if idx_in_album is not None:
-                    idx_in_album = idx_in_album.split('/')[0]
+                    if self.db_provider.get_album_song_by_idx(album_id, idx_in_album) is not None:
+                        return
                 song_id = self.db_provider.add_song(song_name, filepath, audio_format['duration'])
                 for db_artist in db_artists:
                     self.db_provider.add_song_artist(song_id, db_artist['id'])
@@ -352,16 +367,17 @@ class MusicProvider:
     def find_music(self):
         with ThreadPoolExecutor(max_workers=psutil.cpu_count()) as executor:
             for folder, subs, files in os.walk(self.dir):
-                for filename in files:
-                    is_audio_file = False
-                    for audio_ext in AUDIO_FILE_EXTENSIONS:
-                        if filename.endswith('.' + audio_ext):
-                            is_audio_file = True
-                    if not is_audio_file:
-                        continue
-                    filepath = os.path.join(folder, filename)
-                    if self.db_provider.get_song_by_url(filepath) is None:
-                        executor.submit(self.on_audio_file_found, filepath)
+                if not '/trash' in folder:
+                    for filename in files:
+                        is_audio_file = False
+                        for audio_ext in AUDIO_FILE_EXTENSIONS:
+                            if filename.endswith('.' + audio_ext):
+                                is_audio_file = True
+                        if not is_audio_file:
+                            continue
+                        filepath = os.path.join(folder, filename)
+                        if self.db_provider.get_song_by_url(filepath) is None:
+                            executor.submit(self.on_audio_file_found, filepath)
 
     def get_seconds_listened_to_song(self, song_id):
         playbacks = self.db_provider.get_playbacks(song_id)
