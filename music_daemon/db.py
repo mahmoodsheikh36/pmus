@@ -67,6 +67,7 @@ class DBProvider:
                    (artist_id, song_id)\
                    VALUES (?, ?)',
                    (artist_id, song_id))
+        self.commit()
 
     def add_album_artist(self, album_id, artist_id):
         c = self.cursor()
@@ -74,6 +75,7 @@ class DBProvider:
                    (artist_id, album_id)\
                    VALUES (?, ?)',
                    (artist_id, album_id))
+        self.commit()
 
     def add_album_song(self, song_id, album_id, index_in_album):
         c = self.cursor()
@@ -81,13 +83,7 @@ class DBProvider:
                    (song_id, album_id, index_in_album)\
                    VALUES (?, ?, ?)',
                    (song_id, album_id, index_in_album))
-
-    def add_single_song(self, row_id, song_id, image_file_id, year, time_added):
-        c = self.cursor()
-        c.execute('INSERT INTO single_songs\
-                   (id, song_id, image_file_id, year, time_added)\
-                   VALUES (?, ?, ?, ?, ?)',
-                   (row_id, song_id, image_file_id, year, time_added))
+        self.commit()
 
     def add_album(self, name, year):
         c = self.cursor()
@@ -107,19 +103,13 @@ class DBProvider:
         self.commit()
         return c.lastrowid
 
-    def add_artist_image(self, row_id, artist_id, image_file_id):
-        c = self.cursor()
-        c.execute('INSERT INTO artist_images\
-                   (id, image_file_id, artist_id)\
-                   VALUES (?, ?, ?)',
-                   (row_id, image_file_id, artist_id))
-
     def add_liked_song(self, song_id):
         c = self.cursor()
         c.execute('INSERT INTO liked_songs\
                    (song_id, time)\
                    VALUES (?, ?)',
                    (song_id, current_time()))
+        self.commit()
 
     def add_playback(self, time_started, time_ended, song_id):
         c = self.cursor()
@@ -127,8 +117,7 @@ class DBProvider:
                    (time_started, time_ended, song_id)\
                    VALUES (?, ?, ?)',
                   (time_started, time_ended, song_id))
-        # i guess gotta commit to get the lastrowid since we need it
-        self.conn.commit()
+        self.commit()
         return c.lastrowid
 
     def add_pause(self, time, playback_id):
@@ -142,7 +131,6 @@ class DBProvider:
         conn.commit()
 
     def add_resume(self, time, playback_id):
-        # see note for update_playback_time_ended function
         conn = self.get_new_conn()
         c = conn.cursor()
         c.execute('INSERT INTO resumes\
@@ -186,21 +174,13 @@ class DBProvider:
         conn.row_factory = dict_factory
         return conn
 
-    """
-    always use a new connection when updating playbacks because this
-    function is only run from a seperate thread (the AudioTask thread)
-    and sqlite3 connections can only be used from the thread they
-    were created in
-    same goes for add_seek, add_pause, add_resume functions
-    """
     def update_playback_time_ended(self, playback_id, time_ended):
-        conn = self.get_new_conn()
-        c = conn.cursor()
+        c = self.cursor()
         c.execute('UPDATE playbacks SET\
                    time_ended = ?\
                    WHERE id = ?',
                   (time_ended, playback_id))
-        conn.commit()
+        self.conn.commit()
 
     def get_artist(self, artist_id):
         c = self.cursor()
@@ -317,42 +297,54 @@ class MusicProvider:
         if not 'artist' in tags or not 'title' in tags:
             return
 
-        artist_name = tags['artist']
+        artist_names = [tag.strip() for tag in tags['artist'].split(',')]
+        album_artist_names = artist_names
+        if 'album_artist' in tags:
+            album_artist_names = [tag.strip() for tag in tags['album_artist'].split(',')]
         song_name = tags['title']
 
-        lock.acquire()
-        db_artist = self.db_provider.get_artist_by_name(artist_name)
-        if db_artist is None:
-            print('adding artist {}'.format(artist_name))
-            self.db_provider.add_artist(artist_name)
-            db_artist = self.db_provider.get_artist_by_name(artist_name)
+        with lock:
+            db_artists = []
+            for artist_name in artist_names:
+                db_artist = self.db_provider.get_artist_by_name(artist_name)
+                if db_artist is None:
+                    self.db_provider.add_artist(artist_name)
+                    db_artist = self.db_provider.get_artist_by_name(artist_name)
+                db_artists.append(db_artist)
 
-        if 'album' in tags:
-            album_name = tags['album']
-            album_year = None
-            if 'year' in tags:
-                album_year = tags['year']
-            db_album = self.db_provider.get_album_by_name(album_name,
-                                                          db_artist['id'])
-            album_id = None
-            if db_album is None:
-                album_id = self.db_provider.add_album(album_name, album_year)
-                self.db_provider.add_album_artist(album_id, db_artist['id'])
-                self.db_provider.commit()
-                print('added album {}'.format(album_name))
+            if 'album' in tags:
+                album_name = tags['album']
+                album_year = None
+                if 'year' in tags:
+                    album_year = tags['year']
+                db_album_artists = []
+                for db_album_artist_name in album_artist_names:
+                    db_album_artist = self.db_provider.get_artist_by_name(db_album_artist_name)
+                    if db_album_artist is None:
+                        self.db_provider.add_artist(artist_name)
+                        db_album_artist = self.db_provider.get_artist_by_name(artist_name)
+                    db_album_artists.append(db_album_artist)
+                db_album = self.db_provider.get_album_by_name(album_name,
+                        db_album_artists[0]['id'])
+                album_id = None
+                if db_album is None:
+                    album_id = self.db_provider.add_album(album_name, album_year)
+                    for db_album_artist in db_album_artists:
+                        self.db_provider.add_album_artist(album_id, db_album_artist['id'])
+                    print('added album {}'.format(album_name))
+                else:
+                    album_id = db_album['id']
+                idx_in_album = None
+                if 'track' in tags:
+                    idx_in_album = tags['track']
+                if idx_in_album is not None:
+                    idx_in_album = idx_in_album.split('/')[0]
+                song_id = self.db_provider.add_song(song_name, filepath, audio_format['duration'])
+                for db_artist in db_artists:
+                    self.db_provider.add_song_artist(song_id, db_artist['id'])
+                self.db_provider.add_album_song(song_id, album_id, idx_in_album)
             else:
-                album_id = db_album['id']
-            idx_in_album = None
-            if 'track' in tags:
-                idx_in_album = tags['track']
-            if idx_in_album is not None:
-                idx_in_album = idx_in_album.split('/')[0]
-            song_id = self.db_provider.add_song(song_name, filepath, audio_format['duration'])
-            self.db_provider.add_song_artist(song_id, db_artist['id'])
-            self.db_provider.add_album_song(song_id, album_id, idx_in_album)
-        else:
-            print('adding single {}'.format(song_name))
-        lock.release()
+                print('adding single {}'.format(song_name))
 
     def find_music(self):
         with ThreadPoolExecutor(max_workers=psutil.cpu_count()) as executor:
@@ -367,7 +359,6 @@ class MusicProvider:
                     filepath = os.path.join(folder, filename)
                     if self.db_provider.get_song_by_url(filepath) is None:
                         executor.submit(self.on_audio_file_found, filepath)
-        self.db_provider.commit()
 
     def get_seconds_listened_to_song(self, song_id):
         playbacks = self.db_provider.get_playbacks(song_id)
@@ -402,5 +393,4 @@ class MusicProvider:
         if self.db_provider.is_song_liked(song.id):
             return
         self.db_provider.add_liked_song(song.id)
-        self.db_provider.commit()
         song.is_liked = True
