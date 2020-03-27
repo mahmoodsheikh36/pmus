@@ -79,6 +79,9 @@ class Server:
             position_in_seconds = int(args[0])
             self.music_player.seek(position_in_seconds)
         elif cmd == 'list':
+            if len(args) == 0:
+                yield 'you didnt provide the music object type: album, song'
+                return
             music_object_type = args[0]
             if music_object_type == 'song' or music_object_type == 'liked':
                 songs_txt = ''
