@@ -10,9 +10,15 @@ from music_daemon.db import MusicProvider
 from music_daemon.server import Server
 
 if __name__ == '__main__':
+    should_find_music = False
+    if len(sys.argv) > 1:
+        should_find_music = sys.argv[1]
     provider = MusicProvider('/home/mahmooz/music/')
-    #provider.find_music()
+    if should_find_music == 'true':
+        provider.find_music()
+        print('done finding music')
     provider.load_music()
+    print('loaded music')
     player = MusicPlayer()
     server = Server(player, provider)
 
