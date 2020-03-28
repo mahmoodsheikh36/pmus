@@ -17,7 +17,7 @@ class AudioTask():
     def terminate(self):
         self.running = False
 
-    def run(self, url, initial_position, on_progress, on_complete):
+    def run(self, url, initial_position, on_progress_increase, on_complete):
         # idk why but some audio files at 96k become distorted, temporary fix
         sample_rate = 44100
         channels = 2
@@ -28,30 +28,26 @@ class AudioTask():
                                   "pipe:1"],
                                   stdout=subprocess.PIPE)
 
+        def callback(outdata, frames, time, status):
+            bytes_to_read = frames * SAMPLE_SIZE * channels
+            outdata[:] = ffmpeg_stream.stdout.read(bytes_to_read)
+            increase_in_progress =\
+                bytes_to_read / SAMPLE_SIZE / channels / sample_rate
+            if self.running:
+                on_progress_increase(increase_in_progress)
+            else:
+                ffmpeg_stream.terminate()
+                ffmpeg_stream.kill()
+                audio_stream.close()
+
         audio_stream = sounddevice.RawOutputStream(samplerate=sample_rate,
                                                    channels=channels,
-                                                   # not sure if blocksize arg improves things
-                                                   blocksize=int(CHUNK / SAMPLE_SIZE),
-                                                   dtype='int16')
+                                                   dtype='int16',
+                                                   callback=callback)
 
         audio_stream.start()
-
-        data = ffmpeg_stream.stdout.read(CHUNK)
-
-        progress = initial_position
-        while self.running and len(data) > 0:
-            audio_stream.write(data)
-            increase_in_progress =\
-                len(data) / SAMPLE_SIZE / channels / sample_rate
-            progress = progress + increase_in_progress
-            if self.running:
-                on_progress(progress)
-            data = ffmpeg_stream.stdout.read(CHUNK)
-
-        audio_stream.close()
-        ffmpeg_stream.terminate()
-        ffmpeg_stream.kill()
         ffmpeg_stream.wait()
+        print('ffmpeg exit code: {}'.format(ffmpeg_stream.returncode))
         if self.running:
             on_complete()
 
@@ -136,8 +132,8 @@ class MusicPlayer:
         t.start()
         self.audio_task_thread = t
 
-    def on_audio_task_progress(self, progress):
-        self.progress = progress
+    def on_audio_task_progress(self, increase_in_progress):
+        self.progress += increase_in_progress
 
     def terminate_audio_task(self):
         if self.audio_task:
