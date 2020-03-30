@@ -2,6 +2,7 @@ import sounddevice
 import subprocess
 import threading
 import os
+from enum import Enum
 
 from music_daemon.music import Song
 from music_daemon.utils import current_time, file_exists
@@ -9,6 +10,10 @@ from music_daemon.db import DBProvider
 
 CHUNK = 2048    # number of bytes to read on each iteration
 SAMPLE_SIZE = 2 # each sample is 2 bytes (-f s16le with ffmpeg)
+
+class MusicPlayerMode(Enum):
+    LOOP_SONG = 1
+    LOOP_QUEUE = 2
 
 class AudioTask():
     def __init__(self):
@@ -59,6 +64,7 @@ class MusicPlayer:
         self.music_monitor = MusicMonitor(self, DBProvider())
         self.progress = None
         self.playing = False
+        self.mode = MusicPlayerMode.LOOP_QUEUE
 
     def play_album(self, album):
         self.song_queue.clear()
@@ -152,11 +158,17 @@ class MusicPlayer:
         self.music_monitor.terminate()
 
     def on_song_complete(self):
-        self.skip_to_next()
+        if self.mode == MusicPlayerMode.LOOP_QUEUE:
+            self.play_url(self.song_queue[-1].audio_url)
+            self.music_monitor.on_skip()
+        elif self.mode == MusicPlayerMode.LOOP_QUEUE:
+            self.skip_to_next()
 
     def skip_to_next(self):
         if not self.song_queue:
             return
+        if self.mode == MusicPlayerMode.LOOP_SONG:
+            self.mode = MusicPlayerMode.LOOP_QUEUE
         self.ended_song_queue.insert(0, self.song_queue.pop())
         if not self.song_queue:
             self.song_queue.append(self.ended_song_queue.pop())
@@ -165,6 +177,8 @@ class MusicPlayer:
         self.music_monitor.on_skip()
 
     def skip_to_prev(self):
+        if not self.song_queue:
+            return
         if self.progress > 5:
             self.play_url(self.song_queue[-1].audio_url)
             self.playing = True
@@ -178,6 +192,8 @@ class MusicPlayer:
             else:
                 song_to_play = self.ended_song_queue[0]
                 self.ended_song_queue[0] = self.song_queue.pop()
+            if self.mode == MusicPlayerMode.LOOP_SONG:
+                self.mode = MusicPlayerMode.LOOP_QUEUE
             self.song_queue.append(song_to_play)
             self.play_url(self.song_queue[-1].audio_url)
             self.playing = True
