@@ -47,7 +47,6 @@ class AudioTask():
 
         audio_stream.start()
         ffmpeg_stream.wait()
-        print('ffmpeg exit code: {}'.format(ffmpeg_stream.returncode))
         if self.running:
             on_complete()
 
