@@ -84,9 +84,10 @@ class Server:
                 return
             music_object_type = args[0]
             if music_object_type == 'song' or music_object_type == 'liked':
+                list_liked_songs_only = music_object_type == 'liked'
                 songs_txt = ''
                 for song in self.music_provider.get_songs_list():
-                    if music_object_type == 'liked' and not song.is_liked:
+                    if list_liked_songs_only and not song.is_liked:
                         continue
                     yield '{} {} - {} - {}\n'.format(song.id,
                                                      song.name,
@@ -161,6 +162,12 @@ class Server:
                 return
             song_id = int(args[0])
             self.music_provider.like_song(self.music_provider.songs[song_id])
+        elif cmd == 'is_liked':
+            if len(args) == 0:
+                yield 'you didnt provide the id of the song'
+                return
+            song_id = int(args[0])
+            yield str(self.music_provider.songs[song_id].is_liked).lower()
         else:
             yield 'unknown command'
         return
