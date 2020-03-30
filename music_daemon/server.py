@@ -1,6 +1,8 @@
 import socket
 import traceback
 
+from music_daemon.player import MusicPlayerMode
+
 class Server:
     def __init__(self, music_player, music_provider, port=5150):
         self.music_player = music_player
@@ -168,6 +170,12 @@ class Server:
                 return
             song_id = int(args[0])
             yield str(self.music_provider.songs[song_id].is_liked).lower()
+        elif cmd == 'loop_song':
+            self.music_player.mode = MusicPlayerMode.LOOP_SONG
+        elif cmd == 'loop_queue':
+            self.music_player.mode = MusicPlayerMode.LOOP_QUEUE
+        elif cmd == 'mode':
+            yield self.music_player.mode.name
         else:
             yield 'unknown command'
         return
