@@ -1,6 +1,6 @@
 class Song:
     def __init__(self, song_id, audio_url, name, artists, duration,
-                 is_liked=False, seconds_listened=None,
+                 is_liked=False, seconds_listened=0,
                  album=None, index_in_album=None):
         self.id = song_id
         self.name = name
