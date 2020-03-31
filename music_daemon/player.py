@@ -158,7 +158,7 @@ class MusicPlayer:
         self.music_monitor.terminate()
 
     def on_song_complete(self):
-        if self.mode == MusicPlayerMode.LOOP_QUEUE:
+        if self.mode == MusicPlayerMode.LOOP_SONG:
             self.play_url(self.song_queue[-1].audio_url)
             self.music_monitor.on_skip()
         elif self.mode == MusicPlayerMode.LOOP_QUEUE:
