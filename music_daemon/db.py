@@ -336,8 +336,8 @@ class MusicProvider:
                 idx_in_album = tags['track'].split('/')[0]
                 album_name = tags['album']
                 album_year = None
-                if 'year' in tags:
-                    album_year = tags['year']
+                if 'date' in tags:
+                    album_year = tags['date']
                 db_album_artists = []
                 for db_album_artist_name in album_artist_names:
                     db_album_artist = self.db_provider.get_artist_by_name(db_album_artist_name)
