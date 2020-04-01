@@ -81,6 +81,8 @@ class MusicPlayer:
     def play(self, song, initial_progress=0):
         if not file_exists(song.audio_url):
             return
+        if self.mode == MusicPlayerMode.LOOP_SONG:
+            self.mode = MusicPlayerMode.LOOP_QUEUE
         if self.song_queue:
             self.ended_song_queue.append(self.song_queue.pop())
         self.song_queue.append(song)
