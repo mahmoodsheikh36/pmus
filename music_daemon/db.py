@@ -192,6 +192,11 @@ class DBProvider:
         return c.execute('SELECT * FROM albums WHERE id = ?',
                          (album_id,)).fetchone()
 
+    def get_song(self, song_id):
+        c = self.cursor()
+        return c.execute('SELECT * FROM songs WHERE id = ?',
+                         (song_id,)).fetchone()
+
     def get_artist_by_name(self, artist_name):
         return self.cursor().execute('SELECT * FROM artists WHERE name = ?',
                                      (artist_name,)).fetchone()
@@ -355,7 +360,9 @@ class MusicProvider:
                     print('added album {}'.format(album_name))
                 else:
                     album_id = db_album['id']
-                    if self.db_provider.get_album_song_by_idx(album_id, idx_in_album) is not None:
+                    old_album_song = self.db_provider.get_album_song_by_idx(album_id, idx_in_album)
+                    old_song = self.db_provider.get_song(old_album_song['song_id'])
+                    if old_album_song is not None and file_exists(old_song['audio_url']):
                         return
                 song_id = self.db_provider.add_song(song_name, filepath, audio_format['duration'])
                 for db_artist in db_artists:
