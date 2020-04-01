@@ -299,14 +299,12 @@ class MusicProvider:
             self.songs[song_id].is_liked = True
 
         for album in list(self.albums.values()):
-            album_deleted = True
-            for song in album.songs:
-                if file_exists(song.audio_url):
-                    album_deleted = False
-            if album_deleted:
-                del self.albums[album.id]
-                for song in album.songs:
+            for song in list(album.songs):
+                if not file_exists(song.audio_url):
+                    album.songs.remove(song)
                     del self.songs[song.id]
+            if not album.songs:
+                del self.albums[album.id]
 
         for song in self.songs.values():
             song.seconds_listened = self.get_seconds_listened_to_song(song.id)
