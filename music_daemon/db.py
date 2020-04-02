@@ -7,7 +7,7 @@ from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor 
 
 from music_daemon.ffmpeg import get_audio_format
-from music_daemon.music import Song, Album, Artist
+from music_daemon.music import Song, Album, Artist, Playback
 from music_daemon.utils import current_time, file_exists
 
 lock = threading.Lock()
@@ -149,20 +149,14 @@ class DBProvider:
                   (time, position, playback_id))
         conn.commit()
 
-    def get_playbacks(self, song_id):
-        c = self.cursor()
-        return c.execute('SELECT * FROM playbacks WHERE song_id = ?',
-                         (song_id,)).fetchall()
+    def get_playbacks(self):
+        return self.cursor().execute('SELECT * FROM playbacks').fetchall()
 
-    def get_pauses(self, playback_id):
-        c = self.cursor()
-        return c.execute('SELECT * FROM pauses WHERE playback_id = ?',
-                         (playback_id,)).fetchall()
+    def get_pauses(self):
+        return self.cursor().execute('SELECT * FROM pauses').fetchall()
 
-    def get_resumes(self, playback_id):
-        c = self.cursor()
-        return c.execute('SELECT * FROM resumes WHERE playback_id = ?',
-                         (playback_id,)).fetchall()
+    def get_resumes(self):
+        return self.cursor().execute('SELECT * FROM resumes').fetchall()
 
     def get_seeks(self, playback_id):
         c = self.cursor()
@@ -242,6 +236,10 @@ class DBProvider:
     def get_liked_songs(self):
         return self.cursor().execute('SELECT * FROM liked_songs').fetchall()
 
+    def get_playback(self, playback_id):
+        return self.cursor().execute('SELECT * FROM playbacks WHERE id = ?',
+                         (playback_id,)).fetchone()
+
     def commit(self):
         self.conn.commit()
 
@@ -253,6 +251,7 @@ class MusicProvider:
         self.albums = {}
         self.singles = {}
         self.artists = {}
+        self.playbacks = {}
 
     def load_music(self):
         db_songs = self.db_provider.get_songs()
@@ -262,6 +261,9 @@ class MusicProvider:
         db_album_artists = self.db_provider.get_album_artists()
         db_album_songs = self.db_provider.get_album_songs()
         db_liked_songs = self.db_provider.get_liked_songs()
+        db_playbacks = self.db_provider.get_playbacks()
+        db_pauses = self.db_provider.get_pauses()
+        db_resumes = self.db_provider.get_resumes()
 
         for db_artist in db_artists:
             artist = Artist(db_artist['id'], db_artist['name'], [], [])
@@ -269,7 +271,7 @@ class MusicProvider:
 
         for db_song in db_songs:
             song = Song(db_song['id'], db_song['audio_url'], db_song['name'],
-                        [], db_song['duration'])
+                        [], db_song['duration'], playbacks=[])
             self.songs[song.id] = song
 
         for db_album in db_albums:
@@ -306,8 +308,20 @@ class MusicProvider:
             if not album.songs:
                 del self.albums[album.id]
 
-        for song in self.songs.values():
-            song.seconds_listened = self.get_seconds_listened_to_song(song.id)
+        for db_playback in db_playbacks:
+            playback = Playback(db_playback['song_id'],
+                                db_playback['time_started'],
+                                db_playback['time_ended'],
+                                [], [])
+            self.playbacks[db_playback['id']] = playback
+            if db_playback['song_id'] in self.songs:
+                self.songs[db_playback['song_id']].playbacks.append(playback)
+
+        for db_pause in db_pauses:
+            self.playbacks[db_pause['playback_id']].pauses.append(db_pause)
+
+        for db_resume in db_resumes:
+            self.playbacks[db_resume['playback_id']].pauses.append(db_resume)
 
     def on_audio_file_found(self, filepath):
         print(filepath)
@@ -384,26 +398,6 @@ class MusicProvider:
                         filepath = os.path.join(folder, filename)
                         if self.db_provider.get_song_by_url(filepath) is None:
                             executor.submit(self.on_audio_file_found, filepath)
-
-    def get_seconds_listened_to_song(self, song_id):
-        playbacks = self.db_provider.get_playbacks(song_id)
-        total_milliseconds = 0
-        for playback in playbacks:
-            if playback['time_ended'] == -1:
-                continue
-            pauses = self.db_provider.get_pauses(playback['id'])
-            resumes = self.db_provider.get_resumes(playback['id'])
-            if abs(len(pauses) - len(resumes)) > 1:
-                continue
-            milliseconds = playback['time_ended'] - playback['time_started']
-            for i in range(len(resumes)):
-                pause = pauses[i]
-                resume = resumes[i]
-                milliseconds -= resume['time'] - pause['time']
-            if len(pauses) > len(resumes):
-                milliseconds -= playback['time_ended'] - pauses[-1]['time']
-            total_milliseconds += milliseconds
-        return total_milliseconds / 1000
 
     def get_songs_list(self):
         return list(self.songs.values())
