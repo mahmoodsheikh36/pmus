@@ -13,7 +13,7 @@ if __name__ == '__main__':
     provider.load_music()
     first_time_listening = provider.playbacks[1].time_started
 
-    hours_cnt = 24 * 5
+    hours_cnt = 24 * 6
     times_listened = []
 
     from_time = first_time_listening
@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
     fig, ax = plt.subplots()
     ax.plot([hour_num for hour_num in range(hours_cnt)],
-            [time_listened / 1000 for time_listened in times_listened])
+            [time_listened / 1000 for time_listened in times_listened], 'o-')
     ax.set_xlabel('hour', fontsize=30)
     ax.set_ylabel('seconds listened', fontsize=30)
     fig.suptitle('seconds listened to music in each of\nthe past {} hours'.format(hours_cnt), fontsize=30)
