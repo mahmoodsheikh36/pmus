@@ -13,8 +13,6 @@ do that to every class in the code
 
 the code is a mess, needs refactoring
 
-liking songs and adding songs and stuff is currently done through communicating directly with the remote database with other scripts, the daemon should have the functionality to do all of that
-
 the program doesnt close the database connections when its terminated, dunno if this matters when using sqlite
 
 when listing songs, sort them by last listened to
@@ -24,3 +22,5 @@ the process of finding music and adding it to the database could be much much fa
 i have to check what happens when the file of a song gets moved while it is being played
 
 when there is multiple files of a song for an album and the file that was picked to be the one for the album in the database get removed the daemon wont load the other files for the song
+
+the program crashes randomly, this is a problem in portaudio, i have to find an alternative to it
