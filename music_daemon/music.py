@@ -39,11 +39,12 @@ class Playback:
             if time_resumed > to_time:
                 time_resumed = to_time
             milliseconds -= time_resumed - time_paused
-        if len(self.pauses) > len(self.resumes) and\
-                self.pauses[-1]['time'] < to_time:
-            if self.pauses[-1]['time'] < to_time and\
-                    self.pauses[-1]['time'] > from_time:
-                milliseconds -= to_time - self.pauses[-1]['time']
+        if len(self.pauses) > len(self.resumes):
+            time_paused = self.pauses[-1]['time']
+            if time_paused < to_time:
+                if time_paused < from_time:
+                    time_paused = from_time
+                milliseconds -= to_time - time_paused
         return milliseconds
 
 class Song:
