@@ -1,6 +1,54 @@
+class Playback:
+    def __init__(self, song_id, time_started, time_ended,
+                 pauses=None, resumes=None):
+        self.song_id = song_id
+        self.time_started = time_started
+        self.time_ended = time_ended
+        self.pauses = pauses
+        self.resumes = resumes
+
+    def time_listened(self, from_time=None, to_time=None):
+        if self.time_ended == -1:
+            return 0
+        if abs(len(self.pauses) - len(self.resumes)) > 1:
+            return 0
+        if from_time is None:
+            from_time = self.time_started
+        elif from_time > self.time_ended:
+            return 0
+        if to_time is None:
+            to_time = self.time_ended
+        elif to_time < self.time_started:
+            return 0
+        if from_time < self.time_started:
+            from_time = self.time_started
+        if to_time > self.time_ended:
+            to_time = self.time_ended
+        milliseconds = to_time - from_time
+        for i in range(len(self.resumes)):
+            pause = self.pauses[i]
+            resume = self.resumes[i]
+            time_paused = pause['time']
+            time_resumed = resume['time']
+            if time_paused > to_time:
+                continue
+            if time_resumed < from_time:
+                continue
+            if time_paused < from_time:
+                time_paused = from_time
+            if time_resumed > to_time:
+                time_resumed = to_time
+            milliseconds -= time_resumed - time_paused
+        if len(self.pauses) > len(self.resumes) and\
+                self.pauses[-1]['time'] < to_time:
+            if self.pauses[-1]['time'] < to_time and\
+                    self.pauses[-1]['time'] > from_time:
+                milliseconds -= to_time - self.pauses[-1]['time']
+        return milliseconds
+
 class Song:
     def __init__(self, song_id, audio_url, name, artists, duration,
-                 is_liked=False, seconds_listened=0,
+                 is_liked=False, playbacks=None,
                  album=None, index_in_album=None):
         self.id = song_id
         self.name = name
@@ -9,8 +57,8 @@ class Song:
         self.album = album
         self.index_in_album = index_in_album
         self.duration = duration
-        self.seconds_listened = seconds_listened
         self.is_liked = is_liked
+        self.playbacks = playbacks
 
     def to_map(self, include_artists=True):
         self_map = {}
@@ -28,6 +76,12 @@ class Song:
     def is_single():
         return self.album is None
 
+    def time_listened(self, from_time=None, to_time=None):
+        total = 0
+        for playback in self.playbacks:
+            total += playback.time_listened(from_time, to_time)
+        return total
+
 class Album:
     def __init__(self, album_id, name, songs, artists, year):
         self.id = album_id
@@ -36,11 +90,11 @@ class Album:
         self.year = year
         self.songs = songs
 
-    def seconds_listened(self):
-        total_seconds = 0
+    def time_listened(self, from_time=None, to_time=None):
+        total = 0
         for song in self.songs:
-            total_seconds += song.seconds_listened
-        return total_seconds
+            total += song.time_listened(from_time, to_time)
+        return total
 
 class Artist:
     def __init__(self, artist_id, name, albums, singles):
@@ -49,10 +103,10 @@ class Artist:
         self.albums = albums
         self.singles = singles
 
-    def seconds_listened(self):
-        total_seconds = 0
+    def time_listened(self, from_time=None, to_time=None):
+        total = 0
         for album in self.albums:
-            total_seconds += album.seconds_listened()
+            total += album.time_listened(from_time, to_time)
         for single in self.singles:
-            total_seconds += single.seconds_listened
-        return total_seconds
+            total += single.time_listened(from_time, to_time)
+        return total
