@@ -11,8 +11,6 @@ find a way to share the same database connection throughout the whole project
 hide functions and variable that shouldn't be used outside the classes,
 do that to every class in the code
 
-the code is a mess, needs refactoring
-
 the program doesnt close the database connections when its terminated, dunno if this matters when using sqlite
 
 when listing songs, sort them by last listened to
