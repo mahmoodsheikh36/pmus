@@ -309,7 +309,8 @@ class MusicProvider:
                 del self.albums[album.id]
 
         for db_playback in db_playbacks:
-            playback = Playback(db_playback['song_id'],
+            playback = Playback(db_playback['id'],
+                                db_playback['song_id'],
                                 db_playback['time_started'],
                                 db_playback['time_ended'],
                                 [], [])
@@ -407,6 +408,9 @@ class MusicProvider:
 
     def get_artists_list(self):
         return list(self.artists.values())
+    
+    def get_playbacks_list(self):
+        return list(self.playbacks.values())
 
     def like_song(self, song):
         if self.db_provider.is_song_liked(song.id):
