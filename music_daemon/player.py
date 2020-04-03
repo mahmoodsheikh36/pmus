@@ -44,6 +44,7 @@ class AudioTask():
                 ffmpeg_stream.terminate()
                 ffmpeg_stream.kill()
                 audio_stream.close()
+                audio_stream.abort()
 
         audio_stream = sounddevice.RawOutputStream(samplerate=sample_rate,
                                                    channels=channels,
@@ -57,6 +58,7 @@ class AudioTask():
         ffmpeg_stream.terminate()
         ffmpeg_stream.kill()
         audio_stream.close()
+        audio_stream.abort()
 
         if self.running:
             on_complete()
