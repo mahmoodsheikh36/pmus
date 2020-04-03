@@ -2,6 +2,7 @@
 import matplotlib.pyplot as plt
 from music_daemon.db import MusicProvider
 from datetime import datetime
+from music_daemon.utils import current_time
 
 plt.style.use(['dark_background'])
 
@@ -11,12 +12,12 @@ def next_hour(time):
 if __name__ == '__main__':
     provider = MusicProvider()
     provider.load_music()
-    first_time_listening = provider.playbacks[1].time_started
+    first_listen_time = provider.playbacks[1].time_started
 
-    hours_cnt = 24 * 6
+    hours_cnt = int((current_time() - first_listen_time) / 1000 / 3600)
     times_listened = []
 
-    from_time = first_time_listening
+    from_time = first_listen_time
     to_time = next_hour(from_time)
     for i in range(hours_cnt):
         total_time_listened = 0
