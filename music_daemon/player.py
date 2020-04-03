@@ -52,6 +52,12 @@ class AudioTask():
 
         audio_stream.start()
         ffmpeg_stream.wait()
+
+        # cleanup
+        ffmpeg_stream.terminate()
+        ffmpeg_stream.kill()
+        audio_stream.close()
+
         if self.running:
             on_complete()
 
