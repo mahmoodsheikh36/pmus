@@ -1,11 +1,12 @@
 class Playback:
-    def __init__(self, song_id, time_started, time_ended,
+    def __init__(self, playback_id, song_id, time_started, time_ended,
                  pauses=None, resumes=None):
         self.song_id = song_id
         self.time_started = time_started
         self.time_ended = time_ended
         self.pauses = pauses
         self.resumes = resumes
+        self.id = playback_id
 
     def time_listened(self, from_time=None, to_time=None):
         if self.time_ended == -1:
