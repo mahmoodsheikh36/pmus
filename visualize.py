@@ -2,7 +2,9 @@
 import matplotlib.pyplot as plt
 from music_daemon.db import MusicProvider
 
-ENTRY_COUNT = 4
+plt.style.use(['dark_background'])
+
+ENTRY_COUNT = 8
 
 def get_largest_elements(list_to_sort, limit, compare):
     mylist = list_to_sort.copy()
@@ -52,41 +54,46 @@ if __name__ == '__main__':
     top_songs = get_top_songs(provider, ENTRY_COUNT)
     top_artists = get_top_artists(provider, ENTRY_COUNT)
 
-    fig, (songs_graph, albums_graph, artists_graph) = plt.subplots(3)
+    fig, (songs_ax, albums_ax, artists_ax) = plt.subplots(3)
+    fig.tight_layout()
     plt.subplots_adjust(hspace=0.5)
 
     # plot songs
-    songs_graph_color = (0.9, 0.4, 0.6)
-    songs_graph.bar(['{}\n{}'.format(song.name, song.artists[0].name)
+    #songs_graph_color = (0.9, 0.4, 0.6)
+    songs_ax.bar(['{}\n{}'.format(song.name, song.artists[0].name)
                      for song in top_songs],
-                    [song.time_listened() / 1000 for song in top_songs],
-                    color=songs_graph_color)
-    songs_graph.set_xlabel('songs', fontsize=18, color=songs_graph_color,
+                    [song.time_listened() / 1000 for song in top_songs],)
+                    #color=songs_graph_color)
+    songs_ax.set_xlabel('songs', fontsize=18, #color=songs_graph_color,
                             weight='bold')
-    songs_graph.set_ylabel('seconds listened', fontsize=18, color=songs_graph_color,
-                            weight='bold')
+    #songs_graph.set_ylabel('seconds listened', fontsize=18, #color=songs_graph_color,
+                            #weight='bold')
 
     # plot albums
     albums_graph_color = (0.5, 0.5, 0.4)
-    albums_graph.bar(['{}\n{}'.format(album.name, album.artists[0].name)
+    albums_ax.bar(['{}\n{}'.format(album.name, album.artists[0].name)
                       for album in top_albums],
-                     [album.time_listened() / 1000 for album in top_albums],
-                     color=albums_graph_color)
-    albums_graph.set_xlabel('albums', fontsize=18, color=albums_graph_color,
+                     [album.time_listened() / 1000 for album in top_albums],)
+                     #color=albums_graph_color)
+    albums_ax.set_xlabel('albums', fontsize=18, #color=albums_graph_color,
                             weight='bold')
-    albums_graph.set_ylabel('seconds listened', fontsize=18, color=albums_graph_color,
-                            weight='bold')
+    #albums_graph.set_ylabel('seconds listened', fontsize=18, #color=albums_graph_color,
+    #                        weight='bold')
 
     # plot artists
     artists_graph_color=(0.3, 0.3, 0.9)
-    artists_graph.bar([artist.name for artist in top_artists],
-                      [artist.time_listened() / 1000 for artist in top_artists],
-                      color=artists_graph_color)
-    artists_graph.set_xlabel('artists', fontsize=18, color=artists_graph_color,
+    artists_ax.bar([artist.name for artist in top_artists],
+                      [artist.time_listened() / 1000 for artist in top_artists],)
+                      #color=artists_graph_color)
+    artists_ax.set_xlabel('artists', fontsize=18, #color=artists_graph_color,
                             weight='bold')
-    artists_graph.set_ylabel('seconds listened', fontsize=18, color=artists_graph_color,
-                            weight='bold')
+    #artists_graph.set_ylabel('seconds listened', fontsize=18, #color=artists_graph_color,
+    #                        weight='bold')
 
-    plt.suptitle('playback data visual representation', fontweight='bold',
-                            fontsize=25)
+    fig.text(0.03, 0.5, 'seconds listened', ha='center', va='center',
+             rotation='vertical', fontsize=24, weight='bold')
+
+    #plt.suptitle('playback data visual representation', fontweight='bold',
+    #                        fontsize=25)
+    #fig.savefig('figure.png', dpi=1)
     plt.show()
