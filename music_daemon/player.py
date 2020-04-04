@@ -36,16 +36,9 @@ class AudioTask():
         def callback(outdata, frames, time, status):
             bytes_to_read = frames * SAMPLE_SIZE * channels
             audio_bytes = ffmpeg_stream.stdout.read(bytes_to_read)
-            #sample = int.from_bytes(audio_bytes[:2], 'little', signed=True)
-            #print(sample)
             outdata[:] = audio_bytes
             increase_in_progress =\
                 bytes_to_read / SAMPLE_SIZE / channels / sample_rate
-            try:
-                with open(get_cache_dir() + 'audio_data.raw', 'wb+') as f:
-                    f.write(audio_bytes)
-            except Exception as e:
-                print(e)
             if self.running:
                 on_progress_increase(increase_in_progress)
             else:
