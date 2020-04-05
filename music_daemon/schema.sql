@@ -5,7 +5,7 @@ CREATE TABLE songs (
   name TEXT NOT NULL,
   time INTEGER NOT NULL,
   audio_url TEXT NOT NULL,
-  duraton REAL,
+  duration REAL,
   lyrics TEXT
 );
 
