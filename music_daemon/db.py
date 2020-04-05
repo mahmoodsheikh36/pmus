@@ -121,7 +121,6 @@ class DBProvider:
         return c.lastrowid
 
     def add_pause(self, time, playback_id):
-        # see note for update_playback_time_ended function
         conn = self.get_new_conn()
         c = conn.cursor()
         c.execute('INSERT INTO pauses\
@@ -140,7 +139,6 @@ class DBProvider:
         conn.commit()
 
     def add_seek(self, time, position, playback_id):
-        # see note for update_playback_time_ended function
         conn = self.get_new_conn()
         c = conn.cursor()
         c.execute('INSERT INTO seeks\
@@ -239,6 +237,14 @@ class DBProvider:
     def get_playback(self, playback_id):
         return self.cursor().execute('SELECT * FROM playbacks WHERE id = ?',
                          (playback_id,)).fetchone()
+
+    def set_song_lyrics(self, song_id, lyrics):
+        self.cursor().execute('UPDATE songs SET lyrics = ? WHERE id = ?',
+                              (lyrics, song_id))
+
+    def get_song_lyrics(self, song_id):
+        return self.cursor().execute('SELECT lyrics FROM songs WHERE id = ?',
+                         (song_id,)).fetchone()['lyrics']
 
     def commit(self):
         self.conn.commit()
