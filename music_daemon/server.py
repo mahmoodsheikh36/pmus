@@ -176,6 +176,17 @@ class Server:
             self.music_player.mode = MusicPlayerMode.LOOP_QUEUE
         elif cmd == 'mode':
             yield self.music_player.mode.name
+        elif cmd == 'lyrics':
+            if len(args) == 0:
+                yield 'you didnt provide the id of the song'
+                return
+            song_id = args[0]
+            lyrics = self.music_provider.db_provider.get_song_lyrics(song_id)
+            if not lyrics:
+                yield ''
+            else:
+                yield lyrics
+            return
         else:
             yield 'unknown command'
         return
