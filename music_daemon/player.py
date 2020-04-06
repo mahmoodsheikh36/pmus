@@ -6,7 +6,7 @@ from enum import Enum
 
 from music_daemon.music import Song
 from music_daemon.utils import current_time, file_exists
-from music_daemon.db import DBProvider, get_cache_dir
+from music_daemon.db import DBProvider
 
 CHUNK = 2048    # number of bytes to read on each iteration
 SAMPLE_SIZE = 2 # each sample is 2 bytes (-f s16le with ffmpeg)
