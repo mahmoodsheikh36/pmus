@@ -3,26 +3,15 @@ import os.path
 import os
 import psutil
 import threading
-from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor 
 
 from music_daemon.ffmpeg import get_audio_format
 from music_daemon.music import Song, Album, Artist, Playback
 from music_daemon.utils import current_time, file_exists
+from music_daemon.config import config
 
 lock = threading.Lock()
 AUDIO_FILE_EXTENSIONS = ['mp3', 'flac', 'opus', 'm4a']
-
-def get_home_dir():
-    return str(Path.home()) + '/'
-
-def get_cache_dir():
-    path = get_home_dir() + '.cache/music_daemon/'
-    Path(path).mkdir(parents=True, exist_ok=True)
-    return path
-
-def get_db_path():
-    return get_cache_dir() + 'music.db'
 
 def get_schema_buffer():
     project_directory_path = os.path.realpath(
@@ -37,10 +26,10 @@ def dict_factory(cursor, row):
     return d
 
 class DBProvider:
-    def __init__(self, db_path=get_cache_dir()+'music.db'):
+    def __init__(self, db_path=config.DATABASE_PATH):
         self.path = db_path
         should_create_db = False
-        if not Path(self.path).is_file():
+        if not file_exists(self.path):
             should_create_db = True
         self.conn = self.get_new_conn()
         if should_create_db:
@@ -204,12 +193,13 @@ class DBProvider:
                                       index_in_album = ?',
                                      (album_id, idx_in_album)).fetchone()
 
-    def get_song_by_url(self, url):
-        return self.cursor().execute('SELECT * FROM songs WHERE audio_url = ?',
-                                     (url,)).fetchone()
+    def song_with_audio_url_exists(self, url):
+        return self.cursor().execute('SELECT id FROM songs WHERE audio_url = ?',
+                                     (url,)).fetchone() is not None
 
     def get_songs(self):
-        return self.cursor().execute('SELECT * FROM songs').fetchall()
+        return self.cursor().execute('SELECT id,name,time,audio_url,duration\
+                                      FROM songs').fetchall()
 
     def get_artists(self):
         return self.cursor().execute('SELECT * FROM artists').fetchall()
@@ -250,7 +240,7 @@ class DBProvider:
         self.conn.commit()
 
 class MusicProvider:
-    def __init__(self, music_dir=get_home_dir()+'/music'):
+    def __init__(self, music_dir=config.MUSIC_DIR):
         self.dir = music_dir
         self.db_provider = DBProvider()
         self.songs = {}
@@ -403,7 +393,7 @@ class MusicProvider:
                         if not is_audio_file:
                             continue
                         filepath = os.path.join(folder, filename)
-                        if self.db_provider.get_song_by_url(filepath) is None:
+                        if not self.db_provider.song_with_audio_url_exists(filepath):
                             executor.submit(self.on_audio_file_found, filepath)
 
     def get_songs_list(self):
