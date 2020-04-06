@@ -14,7 +14,7 @@ if __name__ == '__main__':
     first_listen_time = provider.playbacks[1].time_started
     total_time = current_time() - first_listen_time
 
-    time_fractions = 10000
+    time_fractions = 100
     xs = []
     ys = []
 
@@ -35,10 +35,10 @@ if __name__ == '__main__':
     fig.set_size_inches(19.2, 10.6)
     ax.plot(xs, ys)
     ax.tick_params(axis='both', which='major', labelsize=20) 
-    fig.tight_layout()
     ax.set_xlabel('actual hours', fontsize=30)
     ax.set_ylabel('hours spent listening to music', fontsize=30)
     #plt.subplots_adjust(top=0.9)
     #plt.savefig('{}/.cache/music_daemon/data.png'.format(home),
     #            dpi=100, bbox_inches='tight')
+    fig.tight_layout()
     plt.show()
