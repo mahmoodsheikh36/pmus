@@ -1,10 +1,7 @@
 #!/usr/bin/python3
 import matplotlib.pyplot as plt
 from music_daemon.db import MusicProvider
-from datetime import datetime
 from music_daemon.utils import current_time
-from pathlib import Path
-home = str(Path.home())
 
 plt.style.use(['dark_background'])
 
@@ -37,8 +34,5 @@ if __name__ == '__main__':
     ax.tick_params(axis='both', which='major', labelsize=20) 
     ax.set_xlabel('actual hours', fontsize=30)
     ax.set_ylabel('hours spent listening to music', fontsize=30)
-    #plt.subplots_adjust(top=0.9)
-    #plt.savefig('{}/.cache/music_daemon/data.png'.format(home),
-    #            dpi=100, bbox_inches='tight')
     fig.tight_layout()
     plt.show()
