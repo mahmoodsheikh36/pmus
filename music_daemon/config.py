@@ -13,8 +13,10 @@ def load_config():
     try:
         with open(get_config_file(), 'r') as config_file:
             config_json = json.loads(config_file.read())
-        config.DATABASE_PATH = config_json['database_path']
-        config.MUSIC_DIR = config_json['music_directory']
+        config.database_path = config_json['database_path']
+        config.music_dir = config_json['music_directory']
+        config.port = int(config_json['port'])
+        config.host = config_json['host']
     except Exception as e:
         print('error loading config file')
         print(e)
@@ -27,7 +29,9 @@ def get_cache_dir():
     return path
 
 class Config:
-    DATABASE_PATH = get_cache_dir() + '/music.db'
-    MUSIC_DIR = get_home_dir() + '/music'
+    database_path = get_cache_dir() + '/music.db'
+    music_dir = get_home_dir() + '/music'
+    host = '0.0.0.0'
+    port = 5150
 
 config = load_config()
