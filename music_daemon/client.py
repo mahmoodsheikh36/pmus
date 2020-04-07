@@ -12,7 +12,11 @@ def send_cmd(cmd, host=config.host, port=config.port):
     data = s.recv(RECV_CHUNK_SIZE)
     while data:
         try:
-            print(data.decode(), end='')
+            yield data.decode()
             data = s.recv(RECV_CHUNK_SIZE)
         except UnicodeDecodeError:
             data += s.recv(RECV_CHUNK_SIZE)
+
+def cmd_to_stdout(cmd, host=config.host, port=config.port):
+    for data in send_cmd(cmd, host, port):
+        print(data, end='', flush=True)
