@@ -118,7 +118,7 @@ class Server:
                     yield 'you didnt provide the artist id'
                     return
                 for artist in self.music_provider.get_artists_list():
-                    yield artist.name + '\n'
+                    yield '{} {}\n'.format(artist.id, artist.name)
             else:
                 yield 'wrong music object type, allowed types: song, album'
                 return
