@@ -14,7 +14,7 @@ if __name__ == '__main__':
     first_listen_time = provider.playbacks[1].time_started
     total_time = current_time() - first_listen_time
 
-    time_fractions = 100
+    time_fractions = 300
     xs = []
     ys = []
 
