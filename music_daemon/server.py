@@ -113,6 +113,12 @@ class Server:
                         yield '{} {} - {}\n'.format(album.id,
                                                     album.name,
                                                     album.artists[0].name)
+            elif music_object_type == 'artist':
+                if len(args) == 0:
+                    yield 'you didnt provide the artist id'
+                    return
+                for artist in self.music_provider.get_artists_list():
+                    yield artist.name + '\n'
             else:
                 yield 'wrong music object type, allowed types: song, album'
                 return
