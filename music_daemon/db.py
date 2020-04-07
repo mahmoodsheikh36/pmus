@@ -26,7 +26,7 @@ def dict_factory(cursor, row):
     return d
 
 class DBProvider:
-    def __init__(self, db_path=config.DATABASE_PATH):
+    def __init__(self, db_path=config.database_path):
         self.path = db_path
         should_create_db = False
         if not file_exists(self.path):
@@ -233,7 +233,7 @@ class DBProvider:
         self.conn.commit()
 
 class MusicProvider:
-    def __init__(self, music_dir=config.MUSIC_DIR):
+    def __init__(self, music_dir=config.music_dir):
         self.dir = music_dir
         self.db_provider = DBProvider()
         self.songs = {}
