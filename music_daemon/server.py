@@ -2,19 +2,22 @@ import socket
 import traceback
 
 from music_daemon.player import MusicPlayerMode
+from music_daemon.config import config
 
 class Server:
-    def __init__(self, music_player, music_provider, port=5150):
+    def __init__(self, music_player, music_provider, host=config.host,
+                 port=config.port):
         self.music_player = music_player
         self.music_provider = music_provider
         self.socket = None
         self.terminated = False
         self.port = port
+        self.host = host
 
     def start(self):
         self.socket = socket.socket()
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.socket.bind(('0.0.0.0', self.port))
+        self.socket.bind((self.host, self.port))
         self.socket.listen()
         while True:
             if self.terminated:
@@ -37,6 +40,7 @@ class Server:
         self.terminated = True
         self.socket.shutdown(socket.SHUT_RDWR)
         self.socket.close()
+        self.music_player.terminate()
 
     def handle_message(self, msg):
         msg = msg.lower()
