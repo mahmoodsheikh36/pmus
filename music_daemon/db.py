@@ -47,7 +47,6 @@ class DBProvider:
                    (name, audio_url, duration, time)\
                    VALUES (?, ?, ?, ?)',
                    (name, audio_url, duration, current_time()))
-        self.commit()
         return c.lastrowid
 
     def add_song_artist(self, song_id, artist_id):
@@ -56,7 +55,6 @@ class DBProvider:
                    (artist_id, song_id)\
                    VALUES (?, ?)',
                    (artist_id, song_id))
-        self.commit()
 
     def add_album_artist(self, album_id, artist_id):
         c = self.cursor()
@@ -64,7 +62,6 @@ class DBProvider:
                    (artist_id, album_id)\
                    VALUES (?, ?)',
                    (artist_id, album_id))
-        self.commit()
 
     def add_album_song(self, song_id, album_id, index_in_album):
         c = self.cursor()
@@ -72,7 +69,6 @@ class DBProvider:
                    (song_id, album_id, index_in_album)\
                    VALUES (?, ?, ?)',
                    (song_id, album_id, index_in_album))
-        self.commit()
 
     def add_album(self, name, year):
         c = self.cursor()
@@ -80,7 +76,6 @@ class DBProvider:
                    (name, year, time)\
                    VALUES (?, ?, ?)',
                    (name, year, current_time()))
-        self.commit()
         return c.lastrowid
 
     def add_artist(self, name):
@@ -89,7 +84,6 @@ class DBProvider:
                    (name, time)\
                    VALUES (?, ?)',
                    (name, current_time()))
-        self.commit()
         return c.lastrowid
 
     def add_liked_song(self, song_id):
@@ -98,7 +92,6 @@ class DBProvider:
                    (song_id, time)\
                    VALUES (?, ?)',
                    (song_id, current_time()))
-        self.commit()
 
     def add_playback(self, time_started, time_ended, song_id):
         c = self.cursor()
@@ -395,6 +388,7 @@ class MusicProvider:
                         filepath = os.path.join(folder, filename)
                         if not self.db_provider.song_with_audio_url_exists(filepath):
                             executor.submit(self.on_audio_file_found, filepath)
+        self.db_provider.commit()
 
     def get_songs_list(self):
         return list(self.songs.values())
