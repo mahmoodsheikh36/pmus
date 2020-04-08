@@ -242,6 +242,13 @@ class MusicProvider:
         self.artists = {}
         self.playbacks = {}
 
+    def unload_music():
+        self.songs = {}
+        self.albums = {}
+        self.singles = {}
+        self.artists = {}
+        self.playbacks = {}
+
     def load_music(self):
         db_songs = self.db_provider.get_songs()
         db_artists = self.db_provider.get_artists()
@@ -375,7 +382,7 @@ class MusicProvider:
                 print('adding single {}'.format(song_name))
 
     def find_music(self):
-        with ThreadPoolExecutor(max_workers=psutil.cpu_count()) as executor:
+        with ThreadPoolExecutor(max_workers=psutil.cpu_count()/2) as executor:
             for folder, subs, files in os.walk(self.dir):
                 if not '/trash' in folder:
                     for filename in files:
