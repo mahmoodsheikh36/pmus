@@ -242,7 +242,7 @@ class MusicProvider:
         self.artists = {}
         self.playbacks = {}
 
-    def unload_music():
+    def unload_music(self):
         self.songs = {}
         self.albums = {}
         self.singles = {}
