@@ -13,6 +13,7 @@ class Server:
         self.terminated = False
         self.port = port
         self.host = host
+        self.finding_music = False
 
     def start(self):
         self.socket = socket.socket()
@@ -197,6 +198,16 @@ class Server:
             else:
                 yield lyrics
             return
+        elif cmd == 'find_music':
+            if self.finding_music:
+                yield 'already looking for music, chill'
+                return
+            self.finding_music = True
+            self.music_provider.find_music()
+            self.music_provider.unload_music()
+            self.music_provider.load_music()
+            self.finding_music = False
+            yield 'done'
         else:
             yield 'unknown command'
         return
