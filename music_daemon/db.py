@@ -87,11 +87,11 @@ class DBProvider:
         return c.lastrowid
 
     def add_liked_song(self, song_id):
-        c = self.cursor()
-        c.execute('INSERT INTO liked_songs\
-                   (song_id, time)\
-                   VALUES (?, ?)',
-                   (song_id, current_time()))
+        self.cursor().execute('INSERT INTO liked_songs\
+                               (song_id, time)\
+                               VALUES (?, ?)',
+                              (song_id, current_time()))
+        self.commit()
 
     def add_playback(self, time_started, time_ended, song_id):
         c = self.cursor()
@@ -103,31 +103,25 @@ class DBProvider:
         return c.lastrowid
 
     def add_pause(self, time, playback_id):
-        conn = self.get_new_conn()
-        c = conn.cursor()
-        c.execute('INSERT INTO pauses\
-                   (time, playback_id)\
-                   VALUES (?, ?)',
-                  (time, playback_id))
-        conn.commit()
+        self.cursor().execute('INSERT INTO pauses\
+                               (time, playback_id)\
+                               VALUES (?, ?)',
+                              (time, playback_id))
+        self.commit()
 
     def add_resume(self, time, playback_id):
-        conn = self.get_new_conn()
-        c = conn.cursor()
-        c.execute('INSERT INTO resumes\
-                   (time, playback_id)\
-                   VALUES (?, ?)',
-                  (time, playback_id))
-        conn.commit()
+        self.cursor().execute('INSERT INTO resumes\
+                               (time, playback_id)\
+                               VALUES (?, ?)',
+                              (time, playback_id))
+        self.commit()
 
     def add_seek(self, time, position, playback_id):
-        conn = self.get_new_conn()
-        c = conn.cursor()
-        c.execute('INSERT INTO seeks\
-                   (time, position, playback_id)\
-                   VALUES (?, ?, ?)',
-                  (time, position, playback_id))
-        conn.commit()
+        self.cursor().execute('INSERT INTO seeks\
+                               (time, position, playback_id)\
+                               VALUES (?, ?, ?)',
+                              (time, position, playback_id))
+        self.commit()
 
     def get_playbacks(self):
         return self.cursor().execute('SELECT * FROM playbacks').fetchall()
