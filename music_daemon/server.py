@@ -42,6 +42,7 @@ class Server:
         self.socket.shutdown(socket.SHUT_RDWR)
         self.socket.close()
         self.music_player.terminate()
+        self.music_provider.db_provider.commit()
 
     def handle_message(self, msg):
         msg = msg.lower()
