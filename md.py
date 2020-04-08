@@ -34,8 +34,8 @@ if __name__ == '__main__':
                         dest='music_object', choices=('playlist',
                                                       'song',
                                                       'album',
-                                                      'liked'),
-                        default='song')
+                                                      'liked',
+                                                      'artist'))
     parser.add_argument('-l', '--list',
                         help='list objects of type specified by -o/--object',
                         action='store_true')
@@ -48,6 +48,9 @@ if __name__ == '__main__':
                         help='send a raw command to the server')
     parser.add_argument('-i', '--ids', metavar='raw command',
                         help='a comma-seperated list of ids of the music objects')
+    parser.add_argument('-c', '--current', action='store_true',
+                        dest='print_current_song',
+                        help='print the current song (that is playing)')
     args = parser.parse_args()
 
     if args.daemon:
@@ -65,5 +68,7 @@ if __name__ == '__main__':
                                                   args.ids.replace(',', ' ')))
             else:
                 parser.print_help()
+        elif args.print_current_song:
+            cmd_to_stdout('current')
         else:
             parser.print_help()
