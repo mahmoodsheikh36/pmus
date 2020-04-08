@@ -51,6 +51,8 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--current', action='store_true',
                         dest='print_current_song',
                         help='print the current song (that is playing)')
+    parser.add_argument('-f', '--find_music', action='store_true',
+                        help='tell the daemon to look for music')
     args = parser.parse_args()
 
     if args.daemon:
@@ -60,7 +62,9 @@ if __name__ == '__main__':
     if args.raw_cmd:
         cmd_to_stdout(args.raw_cmd)
     else:
-        if args.music_object:
+        if args.find_music:
+            cmd_to_stdout('find_music')
+        elif args.music_object:
             if args.list:
                 cmd_to_stdout('list {}'.format(args.music_object))
             elif args.play:
