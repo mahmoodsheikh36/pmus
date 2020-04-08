@@ -23,6 +23,8 @@ def on_lyrics(song, lyrics):
     print('got lyrics for {} - {}'.format(song.name, song.artists[0].name))
 
 if __name__ == '__main__':
+print(('note that its better to kill the music daemon before running'
+       ' this script because this script locks the database'))
     music_provider.load_music()
 
     with ThreadPoolExecutor(max_workers=CONCURRENT_WORKERS) as executor:
