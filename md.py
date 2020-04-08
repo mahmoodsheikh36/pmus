@@ -3,12 +3,12 @@ import sys
 import signal
 import argparse
 
-from music_daemon.player import MusicPlayer
-from music_daemon.db import MusicProvider
-from music_daemon.server import Server
 from music_daemon.client import cmd_to_stdout
 
 def start_server():
+    from music_daemon.player import MusicPlayer
+    from music_daemon.db import MusicProvider
+    from music_daemon.server import Server
     provider = MusicProvider()
     provider.load_music()
 
@@ -45,7 +45,7 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--daemon', help='start the server/daemon',
                         action='store_true')
     parser.add_argument('-r', '--raw_cmd', metavar='raw command',
-                        help='send a raw command to the server')
+                        help='send a raw command to the server/daemon')
     parser.add_argument('-i', '--ids', metavar='raw command',
                         help='a comma-seperated list of ids of the music objects')
     parser.add_argument('-c', '--current', action='store_true',
