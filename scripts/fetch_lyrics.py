@@ -8,12 +8,16 @@ music_provider = music_daemon.db.MusicProvider()
 
 # max connections/threads that can run at a time, 200 might be alot
 CONCURRENT_WORKERS = 200
+CHARS_TO_REMOVE = ".'"
 
 def get_lyrics(song):
     song_name, artist_name = song.name, song.artists[0].name
+    for char_to_remove in CHARS_TO_REMOVE:
+        artist_name = artist_name.replace(char_to_remove, "")
+        song_name = song_name.replace(char_to_remove, "")
     url = "https://genius.com/{}-{}-lyrics".format(
-            artist_name.replace("'", "").replace(' ', '-').capitalize(),
-            song_name.replace("'", "").replace(' ', '-'))
+            artist_name.replace(' ', '-').capitalize(),
+            song_name.replace(' ', '-'))
     bs = BeautifulSoup(requests.get(url).content.decode(), 'html.parser')
     lyrics = bs.find_all("div", {"class": "lyrics"})[0].find_all('p')[0].text
     on_lyrics(song, lyrics)
