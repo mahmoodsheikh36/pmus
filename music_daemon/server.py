@@ -3,6 +3,7 @@ import traceback
 
 from music_daemon.player import MusicPlayerMode
 from music_daemon.config import config
+from music_daemon.music import Song, Artist, Album
 
 class Server:
     def __init__(self, music_player, music_provider, host=config.host,
@@ -209,20 +210,53 @@ class Server:
             self.music_provider.load_music()
             self.finding_music = False
             yield 'done'
-        elif cmd == 'current_url':
-            if not self.music_player.current_song():
-                yield ''
+        elif cmd == 'info':
+            if not args:
+                yield 'you didnt provide the music object type or the ids'
                 return
-            song = self.music_player.current_song()
-            yield '{} {}'.format(song.id,
-                                 song.audio_url)
-            return
-        elif cmd == 'get_url':
-            if len(args) == 0:
-                yield 'you didnt provide the id of the song'
-                return
-            song = self.music_provider.songs[int(args[0])]
-            yield song.audio_url
+            music_object = 'song'
+            if args:
+                music_object = args[0]
+            ids_str = args[1]
+            fmt = 'id name'
+            if len(args) > 2:
+                fmt = ' '.join(args[2:])
+            if music_object == 'song':
+                for info in list_info(self.music_provider.songs, ids_str, fmt):
+                    yield info
+            if music_object == 'album':
+                for info in list_info(self.music_provider.albums, ids_str, fmt):
+                    yield info
+            if music_object == 'artist':
+                for info in list_info(self.music_provider.artists, ids_str, fmt):
+                    yield info
         else:
             yield 'unknown command'
         return
+
+"""
+ids_to_pick can be a comma seperated list of integers (provided by the client)
+or it can be the value 'all' to list all objects
+"""
+def list_info(music_objects_map, ids_to_pick, fmt):
+    if ids_to_pick == 'all':
+        for music_object in list(music_objects_map.values()):
+            yield format_info(music_object, fmt)
+    else:
+        for music_object_id in ids_to_pick.split(','):
+            yield format_info(music_objects_map[int(music_object_id)], fmt)
+
+def format_info(music_object, fmt):
+    if isinstance(music_object, Song):
+        return fmt.replace('id', str(music_object.id))\
+                  .replace('name', music_object.name)\
+                  .replace('album', music_object.album.name)\
+                  .replace('artist', music_object.artists[0].name)\
+                  .replace('url', music_object.audio_url)
+    if isinstance(music_object, Album):
+        return fmt.replace('id', str(music_object.id))\
+                  .replace('name', music_object.name)\
+                  .replace('artist', music_object.artists[0].name)
+    if isinstance(music_object, Artist):
+        return fmt.replace('id', str(music_object.id))\
+                  .replace('name', music_object.name)
