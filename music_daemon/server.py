@@ -217,6 +217,12 @@ class Server:
             yield '{} {}'.format(song.id,
                                  song.audio_url)
             return
+        elif cmd == 'get_url':
+            if len(args) == 0:
+                yield 'you didnt provide the id of the song'
+                return
+            song = self.music_provider.songs[int(args[0])]
+            yield song.audio_url
         else:
             yield 'unknown command'
         return
