@@ -46,7 +46,6 @@ class Server:
         self.music_provider.db_provider.commit()
 
     def handle_message(self, msg):
-        msg = msg.lower()
         split_by_space = msg.split(' ')
         cmd = split_by_space[0]
         args = split_by_space[1:]
@@ -205,7 +204,10 @@ class Server:
                 yield 'already looking for music, chill'
                 return
             self.finding_music = True
-            self.music_provider.find_music()
+            if args:
+                self.music_provider.find_music(' '.join(args))
+            else:
+                self.music_provider.find_music()
             self.music_provider.unload_music()
             self.music_provider.load_music()
             self.finding_music = False
