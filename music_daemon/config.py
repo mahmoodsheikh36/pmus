@@ -32,8 +32,10 @@ def get_cache_dir():
 
 def config_on_play(song):
     if config.on_play_script:
-        print('running play script')
-        subprocess.Popen([config.on_play_script, str(song.id)])
+        try:
+            subprocess.Popen([config.on_play_script, str(song.id)])
+        except:
+            pass
 
 class Config:
     database_path = get_cache_dir() + '/music.db'
