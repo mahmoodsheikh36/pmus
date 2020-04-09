@@ -174,6 +174,7 @@ class MusicPlayer:
         if self.mode == MusicPlayerMode.LOOP_SONG:
             self.play_url(self.song_queue[-1].audio_url)
             self.music_monitor.on_skip()
+            config_on_play(self.current_song())
         elif self.mode == MusicPlayerMode.LOOP_QUEUE:
             self.skip_to_next()
 
@@ -188,6 +189,7 @@ class MusicPlayer:
         self.play_url(self.song_queue[-1].audio_url)
         self.playing = True
         self.music_monitor.on_skip()
+        config_on_play(self.current_song())
 
     def skip_to_prev(self):
         if not self.song_queue:
@@ -211,6 +213,7 @@ class MusicPlayer:
             self.play_url(self.song_queue[-1].audio_url)
             self.playing = True
             self.music_monitor.on_skip()
+            config_on_play(self.current_song())
 
     def current_song(self):
         if self.song_queue:
