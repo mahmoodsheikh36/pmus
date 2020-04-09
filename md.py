@@ -53,6 +53,9 @@ if __name__ == '__main__':
                         help='print the current song (that is playing)')
     parser.add_argument('-f', '--find_music', action='store_true',
                         help='tell the daemon to look for music')
+    parser.add_argument('-cu', '--current_url', action='store_true',
+                        dest='print_current_url',
+                        help='get the url for the currently playing song')
     args = parser.parse_args()
 
     if args.daemon:
@@ -74,5 +77,7 @@ if __name__ == '__main__':
                 parser.print_help()
         elif args.print_current_song:
             cmd_to_stdout('current')
+        elif args.print_current_url:
+            cmd_to_stdout('current_url')
         else:
             parser.print_help()
