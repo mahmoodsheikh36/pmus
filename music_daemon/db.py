@@ -227,8 +227,7 @@ class DBProvider:
         self.conn.commit()
 
 class MusicProvider:
-    def __init__(self, music_dir=config.music_dir):
-        self.dir = music_dir
+    def __init__(self):
         self.db_provider = DBProvider()
         self.songs = {}
         self.albums = {}
@@ -375,9 +374,10 @@ class MusicProvider:
             else:
                 print('adding single {}'.format(song_name))
 
-    def find_music(self):
+    def find_music(self, music_dir=config.music_dir):
         with ThreadPoolExecutor(max_workers=psutil.cpu_count()) as executor:
-            for folder, subs, files in os.walk(self.dir):
+            print(music_dir)
+            for folder, subs, files in os.walk(music_dir):
                 if not '/trash' in folder:
                     for filename in files:
                         is_audio_file = False
