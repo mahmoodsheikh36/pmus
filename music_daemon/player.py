@@ -203,7 +203,8 @@ class MusicPlayer:
                 if not self.song_queue:
                     return
                 song_to_play = self.song_queue.pop(0)
-                self.ended_song_queue.insert(0, self.song_queue.pop())
+                if self.song_queue: # if song_to_play wasnt the only song in queue
+                    self.ended_song_queue.insert(0, self.song_queue.pop())
             else:
                 song_to_play = self.ended_song_queue[0]
                 self.ended_song_queue[0] = self.song_queue.pop()
