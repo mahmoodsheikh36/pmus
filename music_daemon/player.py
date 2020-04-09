@@ -7,6 +7,7 @@ from enum import Enum
 from music_daemon.music import Song
 from music_daemon.utils import current_time, file_exists
 from music_daemon.db import DBProvider
+from music_daemon.config import config_on_play
 
 CHUNK = 2048    # number of bytes to read on each iteration
 SAMPLE_SIZE = 2 # each sample is 2 bytes (-f s16le with ffmpeg)
@@ -97,6 +98,7 @@ class MusicPlayer:
         self.play_url(song.audio_url, initial_progress)
         self.playing = True
         self.music_monitor.on_play()
+        config_on_play(self.current_song())
 
     def add_to_queue(self, song):
         was_empty = not self.song_queue
@@ -105,6 +107,7 @@ class MusicPlayer:
             self.play_url(song.audio_url)
             self.playing = True
             self.music_monitor.on_play()
+            config_on_play(self.current_song())
 
     def clear_queue(self):
         current_song = self.current_song()
