@@ -376,7 +376,7 @@ class MusicProvider:
                 print('adding single {}'.format(song_name))
 
     def find_music(self):
-        with ThreadPoolExecutor(max_workers=psutil.cpu_count()/2) as executor:
+        with ThreadPoolExecutor(max_workers=psutil.cpu_count()) as executor:
             for folder, subs, files in os.walk(self.dir):
                 if not '/trash' in folder:
                     for filename in files:
