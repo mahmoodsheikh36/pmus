@@ -209,6 +209,14 @@ class Server:
             self.music_provider.load_music()
             self.finding_music = False
             yield 'done'
+        elif cmd == 'current_url':
+            if not self.music_player.current_song():
+                yield ''
+                return
+            song = self.music_player.current_song()
+            yield '{} {}'.format(song.id,
+                                 song.audio_url)
+            return
         else:
             yield 'unknown command'
         return
