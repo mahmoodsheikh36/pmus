@@ -222,13 +222,16 @@ class Server:
             if len(args) > 2:
                 fmt = ' '.join(args[2:])
             if music_object == 'song':
-                for info in list_info(self.music_provider.songs, ids_str, fmt):
+                for info in list_info(self, self.music_provider.songs,
+                                      ids_str, fmt):
                     yield info
             if music_object == 'album':
-                for info in list_info(self.music_provider.albums, ids_str, fmt):
+                for info in list_info(self, self.music_provider.albums,
+                                      ids_str, fmt):
                     yield info
             if music_object == 'artist':
-                for info in list_info(self.music_provider.artists, ids_str, fmt):
+                for info in list_info(self, self.music_provider.artists,
+                                      ids_str, fmt):
                     yield info
         else:
             yield 'unknown command'
@@ -238,8 +241,12 @@ class Server:
 ids_to_pick can be a comma seperated list of integers (provided by the client)
 or it can be the value 'all' to list all objects
 """
-def list_info(music_objects_map, ids_to_pick, fmt):
-    if ids_to_pick == 'all':
+def list_info(server, music_objects_map, ids_to_pick, fmt):
+    if ids_to_pick == 'current':
+        current_song = server.music_player.current_song()
+        if current_song is not None:
+            yield format_info(current_song, fmt)
+    elif ids_to_pick == 'all':
         for music_object in list(music_objects_map.values()):
             yield format_info(music_object, fmt)
     else:
