@@ -4,6 +4,7 @@ import signal
 import argparse
 
 from music_daemon.client import cmd_to_stdout
+from music_daemon.config import config
 
 def start_server():
     from music_daemon.player import MusicPlayer
@@ -36,9 +37,6 @@ if __name__ == '__main__':
                                                       'album',
                                                       'liked',
                                                       'artist'))
-    parser.add_argument('-l', '--list',
-                        help='list objects of type specified by -o/--object',
-                        action='store_true')
     parser.add_argument('-p', '--play',
                         help='play objects of type specified by -o/--object',
                         action='store_true')
@@ -47,15 +45,15 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--raw_cmd', metavar='raw command',
                         help='send a raw command to the server/daemon')
     parser.add_argument('-i', '--ids', metavar='raw command',
-                        help='a comma-seperated list of ids of the music objects')
+                        help='a comma-seperated list of ids of the music objects, or all/current to specify all objects or the currently playing object')
     parser.add_argument('-c', '--current', action='store_true',
                         dest='print_current_song',
                         help='print the current song (that is playing)')
-    parser.add_argument('-f', '--find_music', action='store_true',
+    parser.add_argument('-f', '--find_music', nargs='?', const=config.music_dir,
                         help='tell the daemon to look for music')
-    parser.add_argument('-cu', '--current_url', action='store_true',
-                        dest='print_current_url',
-                        help='get the url for the currently playing song')
+    parser.add_argument('-I', '--info', metavar='info format', nargs='?',
+                        const='id name\n',
+                        help='get info about objects of type specified by -o/--object and specify which objects to select using -i/--ids')
     args = parser.parse_args()
 
     if args.daemon:
@@ -66,10 +64,12 @@ if __name__ == '__main__':
         cmd_to_stdout(args.raw_cmd)
     else:
         if args.find_music:
-            cmd_to_stdout('find_music')
+            cmd_to_stdout('find_music {}'.format(args.find_music))
         elif args.music_object:
-            if args.list:
-                cmd_to_stdout('list {}'.format(args.music_object))
+            if args.info: # args.info contains the info format
+                cmd_to_stdout('info {} {} {}'.format(args.music_object,
+                                                     args.ids,
+                                                     args.info))
             elif args.play:
                 cmd_to_stdout('play {} {}'.format(args.music_object,
                                                   args.ids.replace(',', ' ')))
