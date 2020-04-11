@@ -8,7 +8,7 @@ music_provider = music_daemon.db.MusicProvider()
 
 # max connections/threads that can run at a time, 200 might be alot
 CONCURRENT_WORKERS = 200
-CHARS_TO_REMOVE = ".'"
+CHARS_TO_REMOVE = ".'?!"
 
 def get_lyrics(song):
     song_name, artist_name = song.name, song.artists[0].name
