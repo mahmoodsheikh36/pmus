@@ -314,6 +314,9 @@ class MusicProvider:
             self.playbacks[db_resume['playback_id']].pauses.append(db_resume)
 
     def on_audio_file_found(self, filepath):
+        for song in self.songs.values():
+            if song.audio_url == filepath:
+                return
         print(filepath)
         audio_format = get_audio_format(filepath)
         if not 'tags' in audio_format:
@@ -387,8 +390,7 @@ class MusicProvider:
                         if not is_audio_file:
                             continue
                         filepath = os.path.join(folder, filename)
-                        if not self.db_provider.song_with_audio_url_exists(filepath):
-                            executor.submit(self.on_audio_file_found, filepath)
+                        executor.submit(self.on_audio_file_found, filepath)
         self.db_provider.commit()
 
     def get_songs_list(self):
