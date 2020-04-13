@@ -12,6 +12,7 @@ def start_server():
     from music_daemon.server import Server
     provider = MusicProvider()
     provider.load_music()
+    print('music loaded')
 
     player = MusicPlayer()
     server = Server(player, provider)
@@ -77,7 +78,5 @@ if __name__ == '__main__':
                 parser.print_help()
         elif args.print_current_song:
             cmd_to_stdout('current')
-        elif args.print_current_url:
-            cmd_to_stdout('current_url')
         else:
             parser.print_help()
