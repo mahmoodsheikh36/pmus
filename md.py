@@ -53,10 +53,10 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--find_music', nargs='?', const=config.music_dir,
                         help='tell the daemon to look for music')
     parser.add_argument('-I', '--info', metavar='info format', nargs='?',
-                        const='id name\n',
+                        const='id name - artist - album\n',
                         help='get info about objects of type specified by -o/--object and specify which objects to select using -s/--specifier')
     parser.add_argument('-s', '--sort_by', help='what to sort music objects by', 
-                        choices=('time_liked', 'name'))
+                        choices=('time_liked', 'name', 'id'))
     parser.add_argument('-P', '--port', help='network port to listen on',
                         type=int)
     parser.add_argument('-H', '--host', help='network host to listen on')
