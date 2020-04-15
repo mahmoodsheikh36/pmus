@@ -3,8 +3,18 @@
 music_object_type="${1:-song}"
 action="${2:-play}" # available options: add, play
 
-rofi_out="$(md.py -S all -s id -o song -I |\
-    rofi -async-pre-read 1 -dmenu -i -p "${music_object_type}s" -multi-select)"
+[ $music_object_type = "liked" ] && {
+    rofi_out="$(md.py -S liked -s time_liked -o song -I|\
+        rofi -async-pre-read 1 -dmenu -i -p "${music_object_type}s" -multi-select)"
+} 
+[ $music_object_type = "song" ] && {
+    rofi_out="$(md.py -S all -s id -o song -I |\
+        rofi -async-pre-read 1 -dmenu -i -p "${music_object_type}s" -multi-select)"
+}
+[ $music_object_type = "album" ] && {
+    rofi_out="$(md.py -S all -s id -o album -I |\
+        rofi -async-pre-read 1 -dmenu -i -p "${music_object_type}s" -multi-select)"
+}
 
 # for now expand only works with albums, will be made compatible with other
 # song lists like playlists in the future
