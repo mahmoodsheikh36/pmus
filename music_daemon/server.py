@@ -219,7 +219,7 @@ class Server:
             music_object_type = args[0]
             specifier = args[1]
             sort_by = args[2]
-            fmt = 'id name'
+            fmt = 'id name - album - artist'
             if len(args) > 3:
                 fmt = ' '.join(args[3:])
             for info in get_info(self, music_object_type, specifier,
