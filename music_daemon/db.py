@@ -287,7 +287,7 @@ class MusicProvider:
 
         for db_liked_song in db_liked_songs:
             song_id = db_liked_song['song_id']
-            self.songs[song_id].is_liked = True
+            self.songs[song_id].time_liked = db_liked_song['time']
 
         for album in list(self.albums.values()):
             for song in list(album.songs):
