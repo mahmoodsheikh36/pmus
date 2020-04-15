@@ -288,7 +288,7 @@ def get_info(server, music_object_type_str, specifier, sort_by, fmt):
             for song in sort(desired_songs, sort_by):
                 yield format_info(song, fmt)
     elif specifier == 'all':
-        for music_object in list(music_objects_map.values()):
+        for music_object in sort(list(music_objects_map.values()), sort_by):
             yield format_info(music_object, fmt)
     else: # else its a comma seperated list of ids
         for music_object_id in specifier.split(','):
