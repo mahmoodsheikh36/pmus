@@ -246,7 +246,7 @@ def get_albums_of_songs(songs):
 
 def sort(music_objects, sort_by):
     if sort_by == 'id':
-        return
+        return music_objects
     def is_bigger(music_object1, music_object2):
         if sort_by == 'name':
             return music_object1.name < music_object2.name
