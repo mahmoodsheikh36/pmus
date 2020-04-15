@@ -13,7 +13,7 @@ CHARS_TO_REMOVE = ".'?!"
 def get_lyrics(song):
     song_name, artist_name = song.name, song.artists[0].name
     for char_to_remove in CHARS_TO_REMOVE:
-        artist_name = artist_name.replace(char_to_remove, "")
+        artist_name = artist_name.replace(char_to_remove, "").replace('/', '-')
         song_name = song_name.replace(char_to_remove, "")
     url = "https://genius.com/{}-{}-lyrics".format(
             artist_name.replace(' ', '-').capitalize(),
