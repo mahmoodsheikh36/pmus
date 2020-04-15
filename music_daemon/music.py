@@ -50,7 +50,7 @@ class Playback:
 
 class Song:
     def __init__(self, song_id, audio_url, name, artists, duration,
-                 is_liked=False, playbacks=None,
+                 time_liked=None, playbacks=None,
                  album=None, index_in_album=None):
         self.id = song_id
         self.name = name
@@ -59,7 +59,7 @@ class Song:
         self.album = album
         self.index_in_album = index_in_album
         self.duration = duration
-        self.is_liked = is_liked
+        self.time_liked = time_liked
         self.playbacks = playbacks
 
     def to_map(self, include_artists=True):
@@ -72,11 +72,14 @@ class Song:
         if self.album is not None:
             self_map['album'] = self.album.to_map()
 
-    def has_album():
+    def has_album(self):
         return self.album is not None
 
-    def is_single():
+    def is_single(self):
         return self.album is None
+
+    def is_liked(self):
+        return self.time_liked is not None
 
     def time_listened(self, from_time=None, to_time=None):
         total = 0
