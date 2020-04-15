@@ -3,7 +3,7 @@
 music_object_type="${1:-song}"
 action="${2:-play}" # available options: add, play
 
-rofi_out="$(music_daemon_cmd.sh list $music_object_type |\
+rofi_out="$(md.py -S all -s id -o song -I |\
     rofi -async-pre-read 1 -dmenu -i -p "${music_object_type}s" -multi-select)"
 
 # for now expand only works with albums, will be made compatible with other
