@@ -95,7 +95,7 @@ class Server:
                 list_liked_songs_only = music_object_type == 'liked'
                 songs_txt = ''
                 for song in self.music_provider.get_songs_list():
-                    if list_liked_songs_only and not song.is_liked:
+                    if list_liked_songs_only and not song.is_liked():
                         continue
                     yield '{} {} - {} - {}\n'.format(song.id,
                                                      song.name,
@@ -181,7 +181,7 @@ class Server:
                 yield 'you didnt provide the id of the song'
                 return
             song_id = int(args[0])
-            yield str(self.music_provider.songs[song_id].is_liked).lower()
+            yield str(self.music_provider.songs[song_id].is_liked()).lower()
         elif cmd == 'loop_song':
             self.music_player.mode = MusicPlayerMode.LOOP_SONG
         elif cmd == 'loop_queue':
@@ -212,47 +212,86 @@ class Server:
             self.music_provider.load_music()
             self.finding_music = False
             yield 'done'
-        elif cmd == 'info':
+        elif cmd == 'info': # info <music_object_type> <specifier> <sort_by> <fmt>
             if not args:
                 yield 'you didnt provide the music object type or the ids'
                 return
-            music_object = 'song'
-            if args:
-                music_object = args[0]
-            ids_str = args[1]
+            music_object_type = args[0]
+            specifier = args[1]
+            sort_by = args[2]
             fmt = 'id name'
-            if len(args) > 2:
-                fmt = ' '.join(args[2:])
-            if music_object == 'song':
-                for info in list_info(self, self.music_provider.songs,
-                                      ids_str, fmt):
-                    yield info
-            if music_object == 'album':
-                for info in list_info(self, self.music_provider.albums,
-                                      ids_str, fmt):
-                    yield info
-            if music_object == 'artist':
-                for info in list_info(self, self.music_provider.artists,
-                                      ids_str, fmt):
-                    yield info
+            if len(args) > 3:
+                fmt = ' '.join(args[3:])
+            for info in get_info(self, music_object_type, specifier,
+                                 sort_by, fmt):
+                yield info
         else:
             yield 'unknown command'
         return
 
-"""
-ids_to_pick can be a comma seperated list of integers (provided by the client)
-or it can be the value 'all' to list all objects
-"""
-def list_info(server, music_objects_map, ids_to_pick, fmt):
-    if ids_to_pick == 'current':
-        current_song = server.music_player.current_song()
-        if current_song is not None:
-            yield format_info(current_song, fmt)
-    elif ids_to_pick == 'all':
+def get_artists_of_songs(songs):
+    artists = []
+    for song in songs:
+        for artist in song.artists:
+            if not artist in artists:
+                artists.append(artist)
+    return artists
+
+def get_albums_of_songs(songs):
+    albums = []
+    for song in songs:
+        if not song.album in albums:
+            albums.append(song.album)
+    return albums
+
+def sort(music_objects, sort_by):
+    if sort_by == 'id':
+        return
+    def is_bigger(music_object1, music_object2):
+        if sort_by == 'name':
+            return music_object1.name < music_object2.name
+        if sort_by == 'time_liked':
+            return music_object1.time_liked > music_object2.time_liked
+    for idx1 in range(len(music_objects)):
+        for idx2 in range(len(music_objects)):
+            if is_bigger(music_objects[idx1], music_objects[idx2]):
+                music_objects[idx1], music_objects[idx2] =\
+                        music_objects[idx2], music_objects[idx1]
+    """
+    we are sorting in-place so returning the list wouldnt make sense
+    but it makes for loops easier to type by just doing 'for in sort(list)'
+    """
+    return music_objects
+
+def get_info(server, music_object_type_str, specifier, sort_by, fmt):
+    music_objects_map = server.music_provider.songs
+    if music_object_type_str == 'artist':
+        music_objects_map = server.music_provider.artists
+    elif music_object_type_str == 'album':
+        music_objects_map = server.music_provider.albums
+
+    if specifier == 'current' or specifier == 'liked':
+        if specifier == 'current':
+            desired_songs = server.music_player.current_songs()
+        else:
+            desired_songs = []
+            for song in server.music_provider.songs.values():
+                if song.is_liked():
+                    desired_songs.append(song)
+        if music_object_type_str == 'artist':
+            for artist in sort(get_artists_of_songs(desired_songs), sort_by):
+                yield format_info(artist, fmt)
+        elif music_object_type_str == 'album':
+            for album in sort(get_albums_of_songs(desired_songs), sort_by):
+                yield format_info(album, fmt)
+        else:
+            for song in sort(desired_songs, sort_by):
+                yield format_info(song, fmt)
+    elif specifier == 'all':
         for music_object in list(music_objects_map.values()):
             yield format_info(music_object, fmt)
-    else:
-        for music_object_id in ids_to_pick.split(','):
+    else: # else its a comma seperated list of ids
+        for music_object_id in specifier.split(','):
             yield format_info(music_objects_map[int(music_object_id)], fmt)
 
 def format_info(music_object, fmt):
