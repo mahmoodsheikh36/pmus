@@ -1,0 +1,23 @@
+#!/usr/bin/sh
+# script to show album art from music_daemon in sxiv and make it playable
+# using various keys, might be slow because it uses ffmpeg to extract
+# art from audio files, im considering caching images to make it faster
+
+generate_art() {
+    album_id=$1
+    # using raw commands cuz i havent implemented a specifier for album ids yet
+    first_song_id=$(md.py -r "list album $album_id" | head -1\
+        | cut -d ' ' -f1 2>/dev/null)
+    song_url=$(md.py -o song -S $first_song_id -I url)
+    ffmpeg -y -i "$song_url" /tmp/art/"$(basename "$song_url")".png 2>/dev/null
+}
+
+if [ -d /tmp/art ]; then rm /tmp/art/*; else mkdir /tmp/art; fi 2>/dev/null
+
+liked_albums="$(md.py -o album --specifier liked --info 'id ')"
+
+for album_id in $liked_albums; do
+    generate_art $album_id
+    echo got art for $album_id
+done
+sxiv /tmp/art/
