@@ -53,7 +53,7 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--find_music', nargs='?', const=config.music_dir,
                         help='tell the daemon to look for music')
     parser.add_argument('-I', '--info', metavar='info format', nargs='?',
-                        const='id name - artist - album\n',
+                        const='id name - album - artist\n',
                         help='get info about objects of type specified by -o/--object and specify which objects to select using -s/--specifier')
     parser.add_argument('-s', '--sort_by', help='what to sort music objects by', 
                         choices=('time_liked', 'name', 'id'))
