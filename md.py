@@ -55,11 +55,19 @@ if __name__ == '__main__':
     parser.add_argument('-I', '--info', metavar='info format', nargs='?',
                         const='id name\n',
                         help='get info about objects of type specified by -o/--object and specify which objects to select using -i/--ids')
+    parser.add_argument('-p', '--port', help='network port to listen on',
+                        type=int)
+    parser.add_argument('-h', '--host', help='network host to listen on')
     args = parser.parse_args()
 
     if args.daemon:
         print('running as a daemon')
         start_server()
+
+    if args.port:
+        config.port = args.port
+    if args.host:
+        config.host = args.host
 
     if args.raw_cmd:
         cmd_to_stdout(args.raw_cmd)
