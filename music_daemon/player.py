@@ -221,6 +221,9 @@ class MusicPlayer:
             return self.song_queue[-1]
         return None
 
+    def current_songs(self):
+        return self.song_queue + self.ended_song_queue
+
 class MusicMonitor:
     def __init__(self, music_player, db_provider):
         self.music_player = music_player
