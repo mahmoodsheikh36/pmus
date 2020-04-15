@@ -6,6 +6,10 @@ import argparse
 from music_daemon.client import cmd_to_stdout
 from music_daemon.config import config
 
+# fix broken pipes
+from signal import SIGPIPE, SIG_DFL
+signal.signal(SIGPIPE,SIG_DFL)
+
 def start_server():
     from music_daemon.player import MusicPlayer
     from music_daemon.db import MusicProvider
