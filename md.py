@@ -55,9 +55,9 @@ if __name__ == '__main__':
     parser.add_argument('-I', '--info', metavar='info format', nargs='?',
                         const='id name\n',
                         help='get info about objects of type specified by -o/--object and specify which objects to select using -i/--ids')
-    parser.add_argument('-p', '--port', help='network port to listen on',
+    parser.add_argument('-P', '--port', help='network port to listen on',
                         type=int)
-    parser.add_argument('-h', '--host', help='network host to listen on')
+    parser.add_argument('-H', '--host', help='network host to listen on')
     args = parser.parse_args()
 
     if args.daemon:
