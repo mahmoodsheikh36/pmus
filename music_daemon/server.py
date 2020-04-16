@@ -300,9 +300,10 @@ def format_info(music_object, fmt):
     if isinstance(music_object, Song):
         return fmt.replace('id', str(music_object.id))\
                   .replace('name', music_object.name)\
-                  .replace('album', music_object.album.name)\
-                  .replace('artist', music_object.artists[0].name)\
-                  .replace('url', music_object.audio_url)
+                  .replace('artist_name', music_object.artists[0].name)\
+                  .replace('url', music_object.audio_url)\
+                  .replace('album_id', music_object.album.id)\
+                  .replace('album_name', music_object.album.name)
     if isinstance(music_object, Album):
         return fmt.replace('id', str(music_object.id))\
                   .replace('name', music_object.name)\
