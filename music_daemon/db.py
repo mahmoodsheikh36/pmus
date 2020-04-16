@@ -409,4 +409,4 @@ class MusicProvider:
         if self.db_provider.is_song_liked(song.id):
             return
         self.db_provider.add_liked_song(song.id)
-        song.is_liked = True
+        song.time_liked = current_time()
