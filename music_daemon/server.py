@@ -298,12 +298,12 @@ def get_info(server, music_object_type_str, specifier, sort_by, fmt):
 
 def format_info(music_object, fmt):
     if isinstance(music_object, Song):
-        return fmt.replace('id', str(music_object.id))\
+        return fmt.replace('artist_name', music_object.artists[0].name)\
+                  .replace('album_id', str(music_object.album.id))\
+                  .replace('album_name', music_object.album.name)\
                   .replace('name', music_object.name)\
-                  .replace('artist_name', music_object.artists[0].name)\
-                  .replace('url', music_object.audio_url)\
-                  .replace('album_id', music_object.album.id)\
-                  .replace('album_name', music_object.album.name)
+                  .replace('id', str(music_object.id))\
+                  .replace('url', music_object.audio_url)
     if isinstance(music_object, Album):
         return fmt.replace('id', str(music_object.id))\
                   .replace('name', music_object.name)\
