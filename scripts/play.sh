@@ -4,11 +4,11 @@ music_object_type="${1:-song}"
 action="${2:-play}" # available options: add, play
 
 [ $music_object_type = "liked" ] && {
-    rofi_out="$(echo -n $(md.py -S liked -s time_liked -o song -I "id name - album - artist\n") |\
+    rofi_out="$(echo -n $(md.py -S liked -s time_liked -o song -I "id name - album_name - artist_name\n") |\
         rofi -async-pre-read 1 -dmenu -i -p "${music_object_type}s" -multi-select)"
 } 
 [ $music_object_type = "song" ] && {
-    rofi_out="$(echo -n $(md.py -S all -s id -o song -I "id name - album - artist\n") |\
+    rofi_out="$(echo -n $(md.py -S all -s id -o song -I "id name - album_name - artist_name\n") |\
         rofi -async-pre-read 1 -dmenu -i -p "${music_object_type}s" -multi-select)"
 }
 [ $music_object_type = "album" ] && {
