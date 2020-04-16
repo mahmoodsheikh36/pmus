@@ -30,7 +30,9 @@ class Server:
                 try:
                     for line in self.handle_message(message.decode()):
                         client_socket.sendall(line.encode())
-                except socket.error as e:
+                except Exception as e:
+                    traceback.print_tb(e.__traceback__)
+                    print(e)
                     pass
                 client_socket.close()
             except Exception as e:
