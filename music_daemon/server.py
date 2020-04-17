@@ -4,6 +4,7 @@ import traceback
 from music_daemon.player import MusicPlayerMode
 from music_daemon.config import config
 from music_daemon.music import Song, Artist, Album
+from music_daemon.utils import multiple_replace
 
 class Server:
     def __init__(self, music_player, music_provider, host=config.host,
@@ -298,16 +299,19 @@ def get_info(server, music_object_type_str, specifier, sort_by, fmt):
 
 def format_info(music_object, fmt):
     if isinstance(music_object, Song):
-        return fmt.replace('artist_name', music_object.artists[0].name)\
-                  .replace('album_id', str(music_object.album.id))\
-                  .replace('album_name', music_object.album.name)\
-                  .replace('name', music_object.name)\
-                  .replace('id', str(music_object.id))\
-                  .replace('url', music_object.audio_url)
+        return multiple_replace(fmt,
+                {'artist_name' : music_object.artists[0].name,
+                 'album_id' : str(music_object.album.id),
+                 'album_name': music_object.album.name,
+                 'name': music_object.name,
+                 'id': str(music_object.id),
+                 'url': music_object.audio_url})
     if isinstance(music_object, Album):
-        return fmt.replace('id', str(music_object.id))\
-                  .replace('name', music_object.name)\
-                  .replace('artist', music_object.artists[0].name)
+        return multiple_replace(fmt,
+                {'id': str(music_object.id),
+                 'name': music_object.name,
+                 'artist': music_object.artists[0].name})
     if isinstance(music_object, Artist):
-        return fmt.replace('id', str(music_object.id))\
-                  .replace('name', music_object.name)
+        return multiple_replace(fmt,
+                {'id': str(music_object.id),
+                 'name': music_object.name})
