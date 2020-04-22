@@ -12,7 +12,7 @@ action="${2:-play}" # available options: add, play
         rofi -async-pre-read 1 -dmenu -i -p "${music_object_type}s" -multi-select)"
 }
 [ $music_object_type = "album" ] && {
-    rofi_out="$(echo -n $(pmus -S all -s id -o album -I -F "id name - artist\n") |\
+    rofi_out="$(echo -n $(pmus -S all -s id -o album -I -F "id name - artist_name\n") |\
         rofi -async-pre-read 1 -dmenu -i -p "${music_object_type}s" -multi-select)"
 }
 
