@@ -32,8 +32,8 @@ fi
 
 ids=""
 for id in "$(echo "$rofi_out" | cut -d ' ' -f1)"; do
-    ids="$ids $id"
+    [ "$id" != "" ] && ids="$ids $id"
 done
 
 if [ "$music_object_type" = "liked" ]; then music_object_type="song"; fi
-pmus -r "$action $music_object_type $ids"
+[ "$ids" != "" ] && pmus -r "$action $music_object_type $ids"
