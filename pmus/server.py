@@ -313,7 +313,11 @@ def format_info(music_object, fmt):
                  'first_audio_url': music_object.songs[0].audio_url,
                  'artist_name': music_object.artists[0].name})
     if isinstance(music_object, Artist): # music object is artist
+        try:
+            first_audio_url = music_object.albums[0].songs[0].audio_url
+        except:
+            first_audio_url = 'none'
         return multiple_replace(fmt,
                 {'id': str(music_object.id),
                  'name': music_object.name,
-                 'first_audio_url': music_object.songs[0].audio_url})
+                 'first_audio_url': first_audio_url})
