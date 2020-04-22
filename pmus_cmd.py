@@ -2,8 +2,10 @@
 import sys
 import signal
 import argparse
+import subprocess
+from pathlib import Path
 
-from pmus.client import cmd_to_stdout
+from pmus.client import cmd_to_stdout, send_cmd_wait_all
 from pmus.config import config
 
 # fix broken pipes
@@ -32,6 +34,44 @@ def start_server():
 
     server.start()
 
+def extract_art_from_url(url, art_filename, out_dir):
+    return_code = subprocess.call(['ffmpeg', '-y', '-i', url, '{}/{}'.format(
+        out_dir, art_filename), '-loglevel', 'quiet'])
+    return return_code == 0
+
+def generate_art(music_obj, specifier, filename_format, out_dir):
+    Path(out_dir).mkdir(parents=True, exist_ok=True)
+    if music_obj == 'album':
+        all_album_info = send_cmd_wait_all('info {} {} {} {}'.format(
+            music_obj, specifier, 'id', 'first_audio_url\t{}\n'.format(filename_format)))
+        for album_info in all_album_info.split('\n'):
+            if album_info == '': # ignore empty line after last \n
+                continue
+            first_audio_url = album_info.split('\t')[0]
+            art_filename = '{}.png'.format(album_info.split('\t')[1])
+            if extract_art_from_url(first_audio_url, art_filename, out_dir):
+                print(art_filename)
+    elif music_obj == 'song':
+        all_song_info = send_cmd_wait_all('info {} {} {} {}'.format(
+            music_obj, specifier, 'id', 'url\t{}\n'.format(filename_format)))
+        for song_info in all_song_info.split('\n'):
+            if song_info == '': # ignore empty line after last \n
+                continue
+            audio_url = song_info.split('\t')[0]
+            art_filename = '{}.png'.format(song_info.split('\t')[1])
+            if extract_art_from_url(audio_url, art_filename, out_dir):
+                print(art_filename)
+    elif music_obj == 'artist':
+        all_artist_info = send_cmd_wait_all('info {} {} {} {}'.format(
+            music_obj, specifier, 'id', 'first_audio_url\t{}\n'.format(filename_format)))
+        for artist_info in all_artist_info.split('\n'):
+            if artist_info == '': # ignore empty line after last \n
+                continue
+            audio_url = artist_info.split('\t')[0]
+            art_filename = '{}.png'.format(artist_info.split('\t')[1])
+            if extract_art_from_url(audio_url, art_filename, out_dir):
+                print(art_filename)
+            
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
             description='a simple and highly extensible music daemon')
@@ -56,14 +96,16 @@ if __name__ == '__main__':
                         help='print the current song (that is playing)')
     parser.add_argument('-f', '--find_music', nargs='?', const=config.music_dir,
                         help='tell the daemon to look for music')
-    parser.add_argument('-I', '--info', metavar='info format', nargs='?',
-                        const='id name - album_name - artist_name\n',
-                        help='get info about objects of type specified by -o/--object and specify which objects to select using -s/--specifier')
+    parser.add_argument('-I', '--info', action='store_true',
+                        help='get info about objects of type specified by -o and -S, choose output format using -F')
+    parser.add_argument('-F', '--output_format', nargs='?', default='id,name\n',
+                        help='output format')
     parser.add_argument('-s', '--sort_by', help='what to sort music objects by', 
                         choices=('time_liked', 'name', 'id'))
     parser.add_argument('-P', '--port', help='network port to listen on',
                         type=int)
     parser.add_argument('-H', '--host', help='network host to listen on')
+    parser.add_argument('-ga', '--generate_art', help='generate art for objects selected using -o,-S')
     args = parser.parse_args()
 
     if args.daemon:
@@ -83,12 +125,15 @@ if __name__ == '__main__':
         elif args.music_object:
             if args.info: # args.info contains the info format
                 cmd_to_stdout('info {} {} {} {}'.format(args.music_object,
-                                                     args.specifier,
-                                                     args.sort_by,
-                                                     args.info))
+                                                        args.specifier,
+                                                        args.sort_by,
+                                                        args.output_format))
             elif args.play:
                 cmd_to_stdout('play {} {}'.format(args.music_object,
                                                   args.specifier.replace(',', ' ')))
+            elif args.generate_art:
+                generate_art(args.music_object, args.specifier, args.output_format,
+                             args.generate_art)
             else:
                 parser.print_help()
         elif args.print_current_song:
