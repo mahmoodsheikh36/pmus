@@ -101,7 +101,7 @@ if __name__ == '__main__':
     parser.add_argument('-F', '--output_format', nargs='?', default='id,name\n',
                         help='output format')
     parser.add_argument('-s', '--sort_by', help='what to sort music objects by', 
-                        choices=('time_liked', 'name', 'id'))
+                        choices=('time_liked', 'name', 'id'), default='id')
     parser.add_argument('-P', '--port', help='network port to listen on',
                         type=int)
     parser.add_argument('-H', '--host', help='network host to listen on')
