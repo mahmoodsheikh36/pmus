@@ -1,10 +1,10 @@
 import socket
 import traceback
 
-from music_daemon.player import MusicPlayerMode
-from music_daemon.config import config
-from music_daemon.music import Song, Artist, Album
-from music_daemon.utils import multiple_replace
+from pmus.player import MusicPlayerMode
+from pmus.config import config
+from pmus.music import Song, Artist, Album
+from pmus.utils import multiple_replace
 
 class Server:
     def __init__(self, music_player, music_provider, host=config.host,

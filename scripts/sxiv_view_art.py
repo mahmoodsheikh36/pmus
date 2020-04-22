@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from music_daemon.client import send_cmd_wait_all
+from pmus.client import send_cmd_wait_all
 import subprocess
 
 tmp_dir = '/tmp/art'

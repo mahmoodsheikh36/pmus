@@ -1,5 +1,5 @@
 #!/usr/bin/sh
-# script to show album art from music_daemon in sxiv and make it playable
+# script to show album art from pmus in sxiv and make it playable
 # using various keys, might be slow because it uses ffmpeg to extract
 # art from audio files, im considering caching images to make it faster
 

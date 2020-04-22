@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 import matplotlib.pyplot as plt
-from music_daemon.db import MusicProvider
+from pmus.db import MusicProvider
 from datetime import datetime
-from music_daemon.utils import current_time
+from pmus.utils import current_time
 
 plt.style.use(['dark_background'])
 

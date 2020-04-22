@@ -1,5 +1,5 @@
 import socket
-from music_daemon.config import config
+from pmus.config import config
 
 RECV_CHUNK_SIZE = 1024
 

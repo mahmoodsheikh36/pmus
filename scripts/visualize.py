@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import matplotlib.pyplot as plt
-from music_daemon.db import MusicProvider
+from pmus.db import MusicProvider
 
 plt.style.use(['dark_background'])
 

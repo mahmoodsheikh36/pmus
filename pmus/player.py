@@ -4,10 +4,10 @@ import threading
 import os
 from enum import Enum
 
-from music_daemon.music import Song
-from music_daemon.utils import current_time, file_exists
-from music_daemon.db import DBProvider
-from music_daemon.config import config_on_play
+from pmus.music import Song
+from pmus.utils import current_time, file_exists
+from pmus.db import DBProvider
+from pmus.config import config_on_play
 
 CHUNK = 2048    # number of bytes to read on each iteration
 SAMPLE_SIZE = 2 # each sample is 2 bytes (-f s16le with ffmpeg)

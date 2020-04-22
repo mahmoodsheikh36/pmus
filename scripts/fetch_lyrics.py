@@ -3,8 +3,8 @@ import requests
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
 
-import music_daemon.db # the music daemon/player i wrote
-music_provider = music_daemon.db.MusicProvider()
+import pmus.db # the music daemon/player i wrote
+music_provider = pmus.db.MusicProvider()
 
 # max connections/threads that can run at a time, 200 might be alot
 CONCURRENT_WORKERS = 200

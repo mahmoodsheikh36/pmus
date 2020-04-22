@@ -5,10 +5,10 @@ import psutil
 import threading
 from concurrent.futures import ThreadPoolExecutor 
 
-from music_daemon.ffmpeg import get_audio_format
-from music_daemon.music import Song, Album, Artist, Playback
-from music_daemon.utils import current_time, file_exists
-from music_daemon.config import config
+from pmus.ffmpeg import get_audio_format
+from pmus.music import Song, Album, Artist, Playback
+from pmus.utils import current_time, file_exists
+from pmus.config import config
 
 lock = threading.Lock()
 AUDIO_FILE_EXTENSIONS = ['mp3', 'flac', 'opus', 'm4a']

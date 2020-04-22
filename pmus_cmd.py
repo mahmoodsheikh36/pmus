@@ -3,17 +3,17 @@ import sys
 import signal
 import argparse
 
-from music_daemon.client import cmd_to_stdout
-from music_daemon.config import config
+from pmus.client import cmd_to_stdout
+from pmus.config import config
 
 # fix broken pipes
 from signal import SIGPIPE, SIG_DFL
 signal.signal(SIGPIPE,SIG_DFL)
 
 def start_server():
-    from music_daemon.player import MusicPlayer
-    from music_daemon.db import MusicProvider
-    from music_daemon.server import Server
+    from pmus.player import MusicPlayer
+    from pmus.db import MusicProvider
+    from pmus.server import Server
     provider = MusicProvider()
     provider.load_music()
     print('music loaded')
@@ -34,7 +34,7 @@ def start_server():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-            description='friendly neighborhood music_daemon')
+            description='a simple and highly extensible music daemon')
     parser.add_argument('-o', '--object', metavar='music_object', type=str,
                         help='the music object type to do action on',
                         dest='music_object', choices=('playlist',

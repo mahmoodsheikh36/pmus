@@ -1,10 +1,10 @@
 import json
 import subprocess
 from pathlib import Path
-from music_daemon.utils import get_home_dir
+from pmus.utils import get_home_dir
 
 def get_config_dir():
-    return get_home_dir() + '/.config/music_daemon'
+    return get_home_dir() + '/.config/pmus'
 
 def get_config_file():
     return get_config_dir() + '/config.json'
@@ -26,7 +26,7 @@ def load_config():
         return config
 
 def get_cache_dir():
-    path = get_home_dir() + '/.cache/music_daemon/'
+    path = get_home_dir() + '/.cache/pmus/'
     Path(path).mkdir(parents=True, exist_ok=True)
     return path
 
