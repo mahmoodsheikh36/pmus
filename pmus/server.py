@@ -299,19 +299,21 @@ def get_info(server, music_object_type_str, specifier, sort_by, fmt):
 
 def format_info(music_object, fmt):
     if isinstance(music_object, Song):
-        return multiple_replace(fmt,
+        return multiple_replace(fmt, # music object is song
                 {'artist_name' : music_object.artists[0].name,
                  'album_id' : str(music_object.album.id),
                  'album_name': music_object.album.name,
                  'name': music_object.name,
                  'id': str(music_object.id),
                  'url': music_object.audio_url})
-    if isinstance(music_object, Album):
+    if isinstance(music_object, Album): # music object is album
         return multiple_replace(fmt,
                 {'id': str(music_object.id),
                  'name': music_object.name,
-                 'artist': music_object.artists[0].name})
-    if isinstance(music_object, Artist):
+                 'first_audio_url': music_object.songs[0].audio_url,
+                 'artist_name': music_object.artists[0].name})
+    if isinstance(music_object, Artist): # music object is artist
         return multiple_replace(fmt,
                 {'id': str(music_object.id),
-                 'name': music_object.name})
+                 'name': music_object.name,
+                 'first_audio_url': music_object.songs[0].audio_url})
