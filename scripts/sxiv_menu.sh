@@ -6,15 +6,15 @@
 generate_art() {
     album_id=$1
     # using raw commands cuz i havent implemented a specifier for album ids yet
-    first_song_id=$(md.py -r "list album $album_id" | head -1\
+    first_song_id=$(pmus -r "list album $album_id" | head -1\
         | cut -d ' ' -f1 2>/dev/null)
-    song_url=$(md.py -o song -S $first_song_id -I url)
+    song_url=$(pmus -o song -S $first_song_id -I url)
     ffmpeg -y -i "$song_url" /tmp/art/"$(basename "$song_url")".png 2>/dev/null
 }
 
 if [ -d /tmp/art ]; then rm /tmp/art/*; else mkdir /tmp/art; fi 2>/dev/null
 
-liked_albums="$(md.py -o album --specifier liked --info 'id ')"
+liked_albums="$(pmus -o album --specifier liked --info 'id ')"
 
 for album_id in $liked_albums; do
     generate_art $album_id
