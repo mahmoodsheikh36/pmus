@@ -21,7 +21,7 @@ action="${2:-play}" # available options: add, play
 rofi_exit_code=$?
 if [ $rofi_exit_code -eq 10 ] && [ "$music_object_type" = "album" ]; then
     id=$(echo "$rofi_out" | cut -d ' ' -f1 | head -1)
-    rofi_out="$(pmus_cmd.sh list ${music_object_type} $id\
+    rofi_out="$(pmus -r "list ${music_object_type} $id"\
         | rofi -async-pre-read 1 -dmenu -i -p songs -multi-select)"
     rofi_exit_code=$?
     music_object_type="song"
@@ -36,4 +36,4 @@ for id in "$(echo "$rofi_out" | cut -d ' ' -f1)"; do
 done
 
 if [ "$music_object_type" = "liked" ]; then music_object_type="song"; fi
-pmus_cmd.sh $action $music_object_type $ids
+pmus -r "$action $music_object_type $ids"
