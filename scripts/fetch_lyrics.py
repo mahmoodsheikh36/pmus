@@ -16,7 +16,7 @@ def get_lyrics(song):
         artist_name = artist_name.replace(char_to_remove, "").replace('/', '-')
         song_name = song_name.replace(char_to_remove, "")
     url = "https://genius.com/{}-{}-lyrics".format(
-            artist_name.replace(' ', '-').capitalize(),
+            artist_name.replace('& ', 'and ').replace(' ', '-').capitalize(),
             song_name.replace(' ', '-'))
     bs = BeautifulSoup(requests.get(url).content.decode(), 'html.parser')
     lyrics = bs.find_all("div", {"class": "lyrics"})[0].find_all('p')[0].text
