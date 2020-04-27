@@ -305,11 +305,8 @@ def get_info(server, output_music_type, specifier, sort_by, limit, fmt,
                                              sort_by), reverse)[:limit]:
             yield format_info(music_object, fmt)
     else:
-        objects_yielded = 0
         desired_music_objects = []
         for music_object_specifier in reversed_if(specifier.split(','), reverse):
-            if limit and cnt == limit:
-                break
             if '=' in music_object_specifier:
                 input_object_type = music_object_specifier.split('=')[0]
                 input_object_id = int(music_object_specifier.split('=')[1])
@@ -340,6 +337,7 @@ def get_info(server, output_music_type, specifier, sort_by, limit, fmt,
                 if output_music_type == 'artist':
                     for artist in song.artists:
                         desired_music_objects.append(artist)
+        objects_yielded = 0
         for music_obj in reversed_if(sort(desired_music_objects, sort_by),
                                      reverse)[:limit]:
             if limit and objects_yielded == limit:
