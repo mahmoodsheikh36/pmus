@@ -31,12 +31,8 @@ fi
 [ $rofi_exit_code -eq 12 ] && action=add
 
 ids=""
-for id in "$(echo "$rofi_out" | cut -d ' ' -f1)"; do
-    [ "$id" != "" ] && {
-        [ "$ids" = "" ] && ids="$id" || ids="$ids $id"
-    }
-done
+ids=$(echo "$rofi_out" | cut -d ' ' -f1 | tr '\n' ' ' | rev |
+    cut -d ' ' -f2- | rev)
 
-echo "$ids"
 if [ "$music_object_type" = "liked" ]; then music_object_type="song"; fi
 [ "$ids" != "" ] && pmus -r "$action $music_object_type $ids"
