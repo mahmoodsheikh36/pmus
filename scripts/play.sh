@@ -21,7 +21,7 @@ action="${2:-play}" # available options: add, play
 rofi_exit_code=$?
 if [ $rofi_exit_code -eq 10 ] && [ "$music_object_type" = "album" ]; then
     id=$(echo "$rofi_out" | cut -d ' ' -f1 | head -1)
-    rofi_out="$(pmus -r "list ${music_object_type} $id"\
+    rofi_out="$(echo -n $(pmus -I -s idx_in_album -o song -F "id name - album_name - artist_name\n" -S album=$id)\
         | rofi -async-pre-read 1 -dmenu -i -p songs -multi-select)"
     rofi_exit_code=$?
     music_object_type="song"
