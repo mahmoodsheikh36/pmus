@@ -215,11 +215,8 @@ class Server:
             self.music_provider.load_music()
             self.finding_music = False
             yield 'done'
-        elif cmd == 'info': # info <music_object_type> <specifier> <sort_by> <limit> <fmt>
-            if not args:
-                yield 'you didnt provide the music object type or the ids'
-                return
-            music_object_type = args[0]
+        elif cmd == 'info': # info <output_music_type> <specifier> <sort_by> <limit> <fmt>
+            output_music_type = args[0]
             specifier = args[1]
             sort_by = args[2]
             reverse = False
@@ -230,7 +227,7 @@ class Server:
             fmt = 'id name'
             if len(args) > 4:
                 fmt = ' '.join(args[4:])
-            for info in get_info(self, music_object_type, specifier, sort_by,
+            for info in get_info(self, output_music_type, specifier, sort_by,
                                  limit, fmt, reverse):
                 yield info
         else:
@@ -260,6 +257,8 @@ def sort(music_objects, sort_by):
             return music_object1.name < music_object2.name
         if sort_by == 'time_liked':
             return music_object1.time_liked > music_object2.time_liked
+        if sort_by == 'idx_in_album':
+            return music_object1.index_in_album < music_object2.index_in_album
     for idx1 in range(len(music_objects)):
         for idx2 in range(len(music_objects)):
             if is_bigger(music_objects[idx1], music_objects[idx2]):
@@ -271,12 +270,12 @@ def sort(music_objects, sort_by):
     """
     return music_objects
 
-def get_info(server, music_obj_type, specifier, sort_by, limit, fmt,
+def get_info(server, output_music_type, specifier, sort_by, limit, fmt,
              reverse=False):
     music_objects_map = server.music_provider.songs
-    if music_obj_type == 'artist':
+    if output_music_type == 'artist':
         music_objects_map = server.music_provider.artists
-    elif music_obj_type == 'album':
+    elif output_music_type == 'album':
         music_objects_map = server.music_provider.albums
     if limit <= 0:
         limit = None # [:None] results in all elements be selected in list
@@ -289,11 +288,11 @@ def get_info(server, music_obj_type, specifier, sort_by, limit, fmt,
             for song in server.music_provider.songs.values():
                 if song.is_liked():
                     desired_songs.append(song)
-        if music_obj_type == 'artist':
+        if output_music_type == 'artist':
             for artist in reversed_if(sort(get_artists_of_songs(desired_songs),
                                            sort_by), reverse)[:limit]:
                 yield format_info(artist, fmt)
-        elif music_obj_type == 'album':
+        elif output_music_type == 'album':
             for album in reversed_if(sort(get_albums_of_songs(desired_songs),
                                           sort_by), reverse)[:limit]:
                 yield format_info(album, fmt)
@@ -305,13 +304,48 @@ def get_info(server, music_obj_type, specifier, sort_by, limit, fmt,
         for music_object in reversed_if(sort(list(music_objects_map.values()),
                                              sort_by), reverse)[:limit]:
             yield format_info(music_object, fmt)
-    else: # else its a comma seperated list of ids
-        cnt = 0
-        for music_object_id in reversed_if(specifier.split(','), reverse):
+    else:
+        objects_yielded = 0
+        desired_music_objects = []
+        for music_object_specifier in reversed_if(specifier.split(','), reverse):
             if limit and cnt == limit:
                 break
-            yield format_info(music_objects_map[int(music_object_id)], fmt)
-            cnt += 1
+            if '=' in music_object_specifier:
+                input_object_type = music_object_specifier.split('=')[0]
+                input_object_id = int(music_object_specifier.split('=')[1])
+            else:
+                input_object_id = int(music_object_specifier)
+                input_object_type = output_music_type
+            if input_object_type == 'album':
+                album = server.music_provider.albums[input_object_id]
+                if output_music_type == 'artist':
+                    for artist in album.artists:
+                        desired_music_objects.append(artist)
+                if output_music_type == 'song':
+                    for song in album.songs:
+                        desired_music_objects.append(song)
+            if input_object_type == 'artist':
+                artist = server.music_provider.artists[input_object_id]
+                if output_music_type == 'album':
+                    for album in artist.albums:
+                        desired_music_objects.append(album)
+                if output_music_type == 'song':
+                    for album in artist.albums:
+                        for song in album.songs:
+                            desired_music_objects.append(song)
+            if input_object_type == 'song':
+                song = server.music_provider.songs[input_object_id]
+                if output_music_type == 'album':
+                    desired_music_objects.append(song)
+                if output_music_type == 'artist':
+                    for artist in song.artists:
+                        desired_music_objects.append(artist)
+        for music_obj in reversed_if(sort(desired_music_objects, sort_by),
+                                     reverse)[:limit]:
+            if limit and objects_yielded == limit:
+                break
+            yield format_info(music_obj, fmt)
+            objects_yielded += 1
 
 def format_info(music_object, fmt):
     if isinstance(music_object, Song):
