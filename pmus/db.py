@@ -284,11 +284,13 @@ class MusicProvider:
             album_id = db_album_song['album_id']
             self.albums[album_id].songs.append(self.songs[song_id])
             self.songs[song_id].album = self.albums[album_id]
+            self.songs[song_id].index_in_album = db_album_song['index_in_album']
 
         for db_liked_song in db_liked_songs:
             song_id = db_liked_song['song_id']
             self.songs[song_id].time_liked = db_liked_song['time']
 
+        # remove songs/albums that were deleted/moved from filesystem
         for album in list(self.albums.values()):
             for song in list(album.songs):
                 if not file_exists(song.audio_url):
@@ -296,6 +298,13 @@ class MusicProvider:
                     del self.songs[song.id]
             if not album.songs:
                 del self.albums[album.id]
+
+        # sort songs in album by their index in it
+        for album in self.albums.values():
+            for i in range(len(album.songs)):
+                for j in range(i + 1, len(album.songs)):
+                    if album.songs[j].index_in_album < album.songs[i].index_in_album:
+                        album.songs[i], album.songs[j] = album.songs[j], album.songs[i]
 
         for db_playback in db_playbacks:
             playback = Playback(db_playback['id'],
@@ -378,7 +387,6 @@ class MusicProvider:
 
     def find_music(self, music_dir=config.music_dir):
         with ThreadPoolExecutor(max_workers=psutil.cpu_count()) as executor:
-            print(music_dir)
             for folder, subs, files in os.walk(music_dir):
                 if not '/trash' in folder:
                     for filename in files:
