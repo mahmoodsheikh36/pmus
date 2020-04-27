@@ -290,7 +290,7 @@ def get_info(server, music_object_type_str, specifier, sort_by, limit, fmt):
             for album in sort(get_albums_of_songs(desired_songs), sort_by)[:limit]:
                 yield format_info(album, fmt)
         else:
-            for song in sort(desired_songs, sort_by):
+            for song in sort(desired_songs, sort_by)[:limit]:
                 yield format_info(song, fmt)
     elif specifier == 'all':
         for music_object in sort(list(music_objects_map.values()), sort_by)[:limit]:
