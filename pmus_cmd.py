@@ -39,11 +39,11 @@ def extract_art_from_url(url, art_filename, out_dir):
         out_dir, art_filename), '-loglevel', 'quiet'])
     return return_code == 0
 
-def generate_art(music_obj, specifier, filename_format, out_dir, limit):
+def generate_art(music_obj, specifier, filename_format, out_dir, sort_by, limit):
     Path(out_dir).mkdir(parents=True, exist_ok=True)
     if music_obj == 'album':
         all_album_info = send_cmd_wait_all('info {} {} {} {} {}'.format(music_obj,
-            specifier, 'id', limit,
+            specifier, sort_by, limit,
             'first_audio_url\t{}\n'.format(filename_format)))
         for album_info in all_album_info.split('\n'):
             if album_info == '': # ignore empty line after last \n
@@ -54,7 +54,7 @@ def generate_art(music_obj, specifier, filename_format, out_dir, limit):
                 print(art_filename)
     elif music_obj == 'song':
         all_song_info = send_cmd_wait_all('info {} {} {} {} {}'.format(
-            music_obj, specifier, 'id', limit, 'url\t{}\n'.format(filename_format)))
+            music_obj, specifier, sort_by, limit, 'url\t{}\n'.format(filename_format)))
         for song_info in all_song_info.split('\n'):
             if song_info == '': # ignore empty line after last \n
                 continue
@@ -64,7 +64,7 @@ def generate_art(music_obj, specifier, filename_format, out_dir, limit):
                 print(art_filename)
     elif music_obj == 'artist':
         all_artist_info = send_cmd_wait_all('info {} {} {} {} {}'.format(
-            music_obj, specifier, 'id', limit,
+            music_obj, specifier, sort_by, limit,
             'first_audio_url\t{}\n'.format(filename_format)))
         for artist_info in all_artist_info.split('\n'):
             if artist_info == '': # ignore empty line after last \n
@@ -138,8 +138,8 @@ if __name__ == '__main__':
                 cmd_to_stdout('play {} {}'.format(args.music_object,
                                                   args.specifier.replace(',', ' ')))
             elif args.generate_art:
-                generate_art(args.music_object, args.specifier,
-                             args.output_format, args.generate_art, args.limit)
+                generate_art(args.music_object, args.specifier, args.output_format,
+                             args.generate_art, args.sort_by, args.limit)
             else:
                 parser.print_help()
         elif args.print_current_song:
