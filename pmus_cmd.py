@@ -89,7 +89,7 @@ if __name__ == '__main__':
                         action='store_true')
     parser.add_argument('-r', '--raw_cmd', metavar='raw command',
                         help='send a raw command to the server/daemon')
-    parser.add_argument('-S', '--specifier',
+    parser.add_argument('-S', '--specifier', nargs='?', default='all',
                         help='the specifier, could be a list of song ids')
     parser.add_argument('-c', '--current', action='store_true',
                         dest='print_current_song',
