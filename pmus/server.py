@@ -4,7 +4,7 @@ import traceback
 from pmus.player import MusicPlayerMode
 from pmus.config import config
 from pmus.music import Song, Artist, Album
-from pmus.utils import multiple_replace
+from pmus.utils import multiple_replace, reversed_if
 
 class Server:
     def __init__(self, music_player, music_provider, host=config.host,
@@ -222,11 +222,16 @@ class Server:
             music_object_type = args[0]
             specifier = args[1]
             sort_by = args[2]
+            reverse = False
+            if sort_by.startswith('rev_'):
+                reverse = True
+                sort_by = sort_by.split('rev_')[1] # get rid of rev_
             limit = int(args[3])
             fmt = 'id name'
             if len(args) > 4:
                 fmt = ' '.join(args[4:])
-            for info in get_info(self, music_object_type, specifier, sort_by, limit, fmt):
+            for info in get_info(self, music_object_type, specifier, sort_by,
+                                 limit, fmt, reverse):
                 yield info
         else:
             yield 'unknown command'
@@ -266,11 +271,12 @@ def sort(music_objects, sort_by):
     """
     return music_objects
 
-def get_info(server, music_object_type_str, specifier, sort_by, limit, fmt):
+def get_info(server, music_obj_type, specifier, sort_by, limit, fmt,
+             reverse=False):
     music_objects_map = server.music_provider.songs
-    if music_object_type_str == 'artist':
+    if music_obj_type == 'artist':
         music_objects_map = server.music_provider.artists
-    elif music_object_type_str == 'album':
+    elif music_obj_type == 'album':
         music_objects_map = server.music_provider.albums
     if limit <= 0:
         limit = None # [:None] results in all elements be selected in list
@@ -283,21 +289,25 @@ def get_info(server, music_object_type_str, specifier, sort_by, limit, fmt):
             for song in server.music_provider.songs.values():
                 if song.is_liked():
                     desired_songs.append(song)
-        if music_object_type_str == 'artist':
-            for artist in sort(get_artists_of_songs(desired_songs), sort_by)[:limit]:
+        if music_obj_type == 'artist':
+            for artist in reversed_if(sort(get_artists_of_songs(desired_songs),
+                                           sort_by), reverse)[:limit]:
                 yield format_info(artist, fmt)
-        elif music_object_type_str == 'album':
-            for album in sort(get_albums_of_songs(desired_songs), sort_by)[:limit]:
+        elif music_obj_type == 'album':
+            for album in reversed_if(sort(get_albums_of_songs(desired_songs),
+                                          sort_by), reverse)[:limit]:
                 yield format_info(album, fmt)
         else:
-            for song in sort(desired_songs, sort_by)[:limit]:
+            for song in reversed_if(sort(desired_songs, sort_by),
+                                    reverse)[:limit]:
                 yield format_info(song, fmt)
     elif specifier == 'all':
-        for music_object in sort(list(music_objects_map.values()), sort_by)[:limit]:
+        for music_object in reversed_if(sort(list(music_objects_map.values()),
+                                             sort_by), reverse)[:limit]:
             yield format_info(music_object, fmt)
     else: # else its a comma seperated list of ids
         cnt = 0
-        for music_object_id in specifier.split(','):
+        for music_object_id in reversed_if(specifier.split(','), reverse):
             if limit and cnt == limit:
                 break
             yield format_info(music_objects_map[int(music_object_id)], fmt)

@@ -16,3 +16,8 @@ def get_home_dir():
 def multiple_replace(string, rep_dict):
     pattern = re.compile("|".join([re.escape(k) for k in sorted(rep_dict,key=len,reverse=True)]), flags=re.DOTALL)
     return pattern.sub(lambda x: rep_dict[x.group(0)], string)
+
+def reversed_if(list_obj, reverse_or_not):
+    if reverse_or_not:
+        return list_obj[::-1]
+    return list_obj
