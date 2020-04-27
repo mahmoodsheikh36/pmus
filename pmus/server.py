@@ -224,7 +224,7 @@ class Server:
                 reverse = True
                 sort_by = sort_by.split('rev_')[1] # get rid of rev_
             limit = int(args[3])
-            fmt = 'id name'
+            fmt = 'id name\n'
             if len(args) > 4:
                 fmt = ' '.join(args[4:])
             for info in get_info(self, output_music_type, specifier, sort_by,
