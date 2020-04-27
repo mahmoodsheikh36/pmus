@@ -50,8 +50,8 @@ class Playback:
 
 class Song:
     def __init__(self, song_id, audio_url, name, artists, duration,
-                 time_liked=None, playbacks=None,
-                 album=None, index_in_album=None):
+                 index_in_album=None, time_liked=None, playbacks=None,
+                 album=None):
         self.id = song_id
         self.name = name
         self.artists = artists
