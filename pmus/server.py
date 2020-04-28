@@ -318,25 +318,31 @@ def get_info(server, output_music_type, specifier, sort_by, limit, fmt,
                 if output_music_type == 'artist':
                     for artist in album.artists:
                         desired_music_objects.append(artist)
-                if output_music_type == 'song':
+                elif output_music_type == 'song':
                     for song in album.songs:
                         desired_music_objects.append(song)
+                else:
+                    desired_music_objects.append(album)
             if input_object_type == 'artist':
                 artist = server.music_provider.artists[input_object_id]
                 if output_music_type == 'album':
                     for album in artist.albums:
                         desired_music_objects.append(album)
-                if output_music_type == 'song':
+                elif output_music_type == 'song':
                     for album in artist.albums:
                         for song in album.songs:
                             desired_music_objects.append(song)
+                else:
+                    desired_music_objects.append(artist)
             if input_object_type == 'song':
                 song = server.music_provider.songs[input_object_id]
                 if output_music_type == 'album':
                     desired_music_objects.append(song)
-                if output_music_type == 'artist':
+                elif output_music_type == 'artist':
                     for artist in song.artists:
                         desired_music_objects.append(artist)
+                else:
+                    desired_music_objects.append(song)
         objects_yielded = 0
         for music_obj in reversed_if(sort(desired_music_objects, sort_by),
                                      reverse)[:limit]:
