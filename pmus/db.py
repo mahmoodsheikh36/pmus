@@ -2,14 +2,12 @@ import sqlite3
 import os.path
 import os
 import psutil
-import threading
 
 from pmus.ffmpeg import get_audio_format
 from pmus.music import Song, Album, Artist, Playback
 from pmus.utils import current_time, file_exists
 from pmus.config import config
 
-lock = threading.Lock()
 AUDIO_FILE_EXTENSIONS = ['mp3', 'flac', 'opus', 'm4a']
 
 def get_schema_buffer():
@@ -338,51 +336,50 @@ class MusicProvider:
             album_artist_names = [tag.strip() for tag in tags['album_artist'].split(',')]
         song_name = tags['title']
 
-        with lock:
-            db_artists = []
-            for artist_name in artist_names:
+        db_artists = []
+        for artist_name in artist_names:
+            db_artist = self.db_provider.get_artist_by_name(artist_name)
+            if db_artist is None:
+                self.db_provider.add_artist(artist_name)
                 db_artist = self.db_provider.get_artist_by_name(artist_name)
-                if db_artist is None:
-                    self.db_provider.add_artist(artist_name)
-                    db_artist = self.db_provider.get_artist_by_name(artist_name)
-                db_artists.append(db_artist)
+            db_artists.append(db_artist)
 
-            if 'album' in tags:
-                if not 'track' in tags:
-                    return
-                idx_in_album = tags['track'].split('/')[0]
-                album_name = tags['album']
-                album_year = None
-                if 'date' in tags:
-                    album_year = tags['date']
-                db_album_artists = []
-                for db_album_artist_name in album_artist_names:
+        if 'album' in tags:
+            if not 'track' in tags:
+                return
+            idx_in_album = tags['track'].split('/')[0]
+            album_name = tags['album']
+            album_year = None
+            if 'date' in tags:
+                album_year = tags['date']
+            db_album_artists = []
+            for db_album_artist_name in album_artist_names:
+                db_album_artist = self.db_provider.get_artist_by_name(db_album_artist_name)
+                if db_album_artist is None:
+                    self.db_provider.add_artist(db_album_artist_name)
                     db_album_artist = self.db_provider.get_artist_by_name(db_album_artist_name)
-                    if db_album_artist is None:
-                        self.db_provider.add_artist(db_album_artist_name)
-                        db_album_artist = self.db_provider.get_artist_by_name(db_album_artist_name)
-                    db_album_artists.append(db_album_artist)
-                db_album = self.db_provider.get_album_by_name(album_name,
-                        db_album_artists[0]['id'])
-                album_id = None
-                if db_album is None:
-                    album_id = self.db_provider.add_album(album_name, album_year)
-                    for db_album_artist in db_album_artists:
-                        self.db_provider.add_album_artist(album_id, db_album_artist['id'])
-                    print('added album {} - {}'.format(album_name, db_album_artists[0]['name']))
-                else:
-                    album_id = db_album['id']
-                    old_album_song = self.db_provider.get_album_song_by_idx(album_id, idx_in_album)
-                    if old_album_song is not None:
-                        old_song = self.db_provider.get_song(old_album_song['song_id'])
-                        if old_album_song is not None and file_exists(old_song['audio_url']):
-                            return
-                song_id = self.db_provider.add_song(song_name, filepath, audio_format['duration'])
-                for db_artist in db_artists:
-                    self.db_provider.add_song_artist(song_id, db_artist['id'])
-                self.db_provider.add_album_song(song_id, album_id, idx_in_album)
-            #else:
-                #print('adding single {}'.format(song_name))
+                db_album_artists.append(db_album_artist)
+            db_album = self.db_provider.get_album_by_name(album_name,
+                    db_album_artists[0]['id'])
+            album_id = None
+            if db_album is None:
+                album_id = self.db_provider.add_album(album_name, album_year)
+                for db_album_artist in db_album_artists:
+                    self.db_provider.add_album_artist(album_id, db_album_artist['id'])
+                print('added album {} - {}'.format(album_name, db_album_artists[0]['name']))
+            else:
+                album_id = db_album['id']
+                old_album_song = self.db_provider.get_album_song_by_idx(album_id, idx_in_album)
+                if old_album_song is not None:
+                    old_song = self.db_provider.get_song(old_album_song['song_id'])
+                    if old_album_song is not None and file_exists(old_song['audio_url']):
+                        return
+            song_id = self.db_provider.add_song(song_name, filepath, audio_format['duration'])
+            for db_artist in db_artists:
+                self.db_provider.add_song_artist(song_id, db_artist['id'])
+            self.db_provider.add_album_song(song_id, album_id, idx_in_album)
+        #else:
+            #print('adding single {}'.format(song_name))
 
     def find_music(self, music_dir=config.music_dir):
         for folder, subs, files in os.walk(music_dir):
