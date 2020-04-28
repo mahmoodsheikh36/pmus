@@ -1,7 +1,6 @@
 import sqlite3
 import os.path
 import os
-import psutil
 
 from pmus.ffmpeg import get_audio_format
 from pmus.music import Song, Album, Artist, Playback
