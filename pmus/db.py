@@ -3,7 +3,6 @@ import os.path
 import os
 import psutil
 import threading
-from concurrent.futures import ThreadPoolExecutor 
 
 from pmus.ffmpeg import get_audio_format
 from pmus.music import Song, Album, Artist, Playback
@@ -386,18 +385,17 @@ class MusicProvider:
                 #print('adding single {}'.format(song_name))
 
     def find_music(self, music_dir=config.music_dir):
-        with ThreadPoolExecutor(max_workers=psutil.cpu_count()) as executor:
-            for folder, subs, files in os.walk(music_dir):
-                if not '/trash' in folder:
-                    for filename in files:
-                        is_audio_file = False
-                        for audio_ext in AUDIO_FILE_EXTENSIONS:
-                            if filename.endswith('.' + audio_ext):
-                                is_audio_file = True
-                        if not is_audio_file:
-                            continue
-                        filepath = os.path.join(folder, filename)
-                        executor.submit(self.on_audio_file_found, filepath)
+        for folder, subs, files in os.walk(music_dir):
+            if not '/trash' in folder:
+                for filename in files:
+                    is_audio_file = False
+                    for audio_ext in AUDIO_FILE_EXTENSIONS:
+                        if filename.endswith('.' + audio_ext):
+                            is_audio_file = True
+                    if not is_audio_file:
+                        continue
+                    filepath = os.path.join(folder, filename)
+                    self.on_audio_file_found(filepath)
         self.db_provider.commit()
 
     def get_songs_list(self):
