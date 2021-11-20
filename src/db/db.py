@@ -377,8 +377,6 @@ class MusicProvider:
             for db_artist in db_artists:
                 self.db_provider.add_song_artist(song_id, db_artist['id'])
             self.db_provider.add_album_song(song_id, album_id, idx_in_album)
-        #else:
-            #print('adding single {}'.format(song_name))
 
     def find_music(self, music_dir=config.music_dir):
         for folder, subs, files in os.walk(music_dir):

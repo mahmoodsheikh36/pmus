@@ -1,20 +1,21 @@
 PRAGMA foreign_keys = OFF;
 
-CREATE TABLE songs (
+CREATE TABLE tracks (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
-  time INTEGER NOT NULL,
-  audio_url TEXT NOT NULL,
-  duration REAL,
+  audio_file_path TEXT NOT NULL,
+  duration REAL NOT NULL,
+  album_id INTEGER NOT NULL,
+  index_in_album INTEGER NOT NULL,
   lyrics TEXT
 );
 
-CREATE TABLE song_artists (
+CREATE TABLE track_artists (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   artist_id INTEGER NOT NULL,
-  song_id INTEGER NOT NULL,
+  track_id INTEGER NOT NULL,
   FOREIGN KEY (artist_id) REFERENCES artists (id),
-  FOREIGN KEY (song_id) REFERENCES songs (id)
+  FOREIGN KEY (track_id) REFERENCES tracks (id)
 );
 
 CREATE TABLE album_artists (
@@ -25,41 +26,15 @@ CREATE TABLE album_artists (
   FOREIGN KEY (artist_id) REFERENCES artists (id)
 );
 
-CREATE TABLE album_songs (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  song_id INTEGER NOT NULL,
-  album_id INTEGER NOT NULL,
-  index_in_album INTEGER,
-  FOREIGN KEY (album_id) REFERENCES albums (id),
-  FOREIGN KEY (song_id) REFERENCES songs (id)
-);
-
-CREATE TABLE single_songs (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  song_id INTEGER NOT NULL,
-  year INTEGER NOT NULL,
-  time INTEGER NOT NULL,
-  FOREIGN KEY (song_id) REFERENCES songs (id)
-);
-
 CREATE TABLE albums (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
-  year INTEGER,
-  time INTEGER NOT NULL
+  year INTEGER
 );
 
 CREATE TABLE artists (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL,
-  time INTEGER NOT NULL
-);
-
-CREATE TABLE liked_songs (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  song_id INTEGER NOT NULL,
-  time INTEGER NOT NULL,
-  FOREIGN KEY (song_id) REFERENCES songs (id)
+  name TEXT NOT NULL
 );
 
 CREATE TABLE playbacks (
