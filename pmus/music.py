@@ -1,7 +1,7 @@
 class Playback:
-    def __init__(self, playback_id, track_id, time_started, time_ended,
+    def __init__(self, playback_id, song_id, time_started, time_ended,
                  pauses=None, resumes=None):
-        self.track_id = track_id
+        self.song_id = song_id
         self.time_started = time_started
         self.time_ended = time_ended
         self.pauses = pauses
@@ -48,25 +48,27 @@ class Playback:
                 milliseconds -= to_time - time_paused
         return milliseconds
 
-class Track:
-    def __init__(self, track_id, album, audio_file_path, name, artists, duration,
-                 playbacks=None):
-        self.id = track_id
-        self.album = album
+class Song:
+    def __init__(self, song_id, audio_url, name, artists, duration,
+                 index_in_album=None, time_liked=None, playbacks=None,
+                 album=None):
+        self.id = song_id
         self.name = name
         self.artists = artists
-        self.audio_file_path = audio_file_path
+        self.audio_url = audio_url
         self.album = album
+        self.index_in_album = index_in_album
         self.duration = duration
+        self.time_liked = time_liked
         self.playbacks = playbacks
 
     def to_map(self, include_artists=True):
         self_map = {}
-        self_map['id'] = self.track_id
+        self_map['id'] = self.song_id
         self_map['name'] = self.name
         if include_artists:
             self_map['artists'] = [artist.to_map() for artist in self.artists]
-        self_map['audio_file_path'] = self.audio_file_path
+        self_map['audio_url'] = self.audio_url
         if self.album is not None:
             self_map['album'] = self.album.to_map()
 
@@ -76,6 +78,9 @@ class Track:
     def is_single(self):
         return self.album is None
 
+    def is_liked(self):
+        return self.time_liked is not None
+
     def time_listened(self, from_time=None, to_time=None):
         total = 0
         for playback in self.playbacks:
@@ -83,17 +88,17 @@ class Track:
         return total
 
 class Album:
-    def __init__(self, album_id, name, tracks, artists, year):
+    def __init__(self, album_id, name, songs, artists, year):
         self.id = album_id
         self.name = name
         self.artists = artists
         self.year = year
-        self.tracks = tracks
+        self.songs = songs
 
     def time_listened(self, from_time=None, to_time=None):
         total = 0
-        for track in self.tracks:
-            total += track.time_listened(from_time, to_time)
+        for song in self.songs:
+            total += song.time_listened(from_time, to_time)
         return total
 
 class Artist:

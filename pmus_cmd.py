@@ -1,21 +1,21 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 import sys
 import signal
 import argparse
 import subprocess
 from pathlib import Path
 
-from pmus.client import cmd_to_stdout, send_cmd_wait_all
-from pmus.config import config
+from pmus.client.client import cmd_to_stdout, send_cmd_wait_all
+from pmus.utils.config import config
 
 # fix broken pipes
 from signal import SIGPIPE, SIG_DFL
 signal.signal(SIGPIPE,SIG_DFL)
 
 def start_server():
-    from pmus.player import MusicPlayer
-    from pmus.db import MusicProvider
-    from pmus.server import Server
+    from pmus.music.player import MusicPlayer
+    from pmus.music.provider import MusicProvider
+    from pmus.server.server import Server
     provider = MusicProvider()
     provider.load_music()
     print('music loaded')
@@ -44,34 +44,34 @@ def generate_art(music_obj, specifier, filename_format, out_dir, sort_by, limit)
     if music_obj == 'album':
         all_album_info = send_cmd_wait_all('info {} {} {} {} {}'.format(music_obj,
             specifier, sort_by, limit,
-            'first_audio_url\t{}\n'.format(filename_format)))
+            'first_audio_file_path\t{}\n'.format(filename_format)))
         for album_info in all_album_info.split('\n'):
             if album_info == '': # ignore empty line after last \n
                 continue
-            first_audio_url = album_info.split('\t')[0]
+            first_audio_file_path = album_info.split('\t')[0]
             art_filename = '{}.png'.format(album_info.split('\t')[1])
-            if extract_art_from_url(first_audio_url, art_filename, out_dir):
+            if extract_art_from_url(first_audio_file_path, art_filename, out_dir):
                 print(art_filename)
-    elif music_obj == 'song':
-        all_song_info = send_cmd_wait_all('info {} {} {} {} {}'.format(
+    elif music_obj == 'track':
+        all_track_info = send_cmd_wait_all('info {} {} {} {} {}'.format(
             music_obj, specifier, sort_by, limit, 'url\t{}\n'.format(filename_format)))
-        for song_info in all_song_info.split('\n'):
-            if song_info == '': # ignore empty line after last \n
+        for track_info in all_track_info.split('\n'):
+            if track_info == '': # ignore empty line after last \n
                 continue
-            audio_url = song_info.split('\t')[0]
-            art_filename = '{}.png'.format(song_info.split('\t')[1])
-            if extract_art_from_url(audio_url, art_filename, out_dir):
+            audio_file_path = track_info.split('\t')[0]
+            art_filename = '{}.png'.format(track_info.split('\t')[1])
+            if extract_art_from_url(audio_file_path, art_filename, out_dir):
                 print(art_filename)
     elif music_obj == 'artist':
         all_artist_info = send_cmd_wait_all('info {} {} {} {} {}'.format(
             music_obj, specifier, sort_by, limit,
-            'first_audio_url\t{}\n'.format(filename_format)))
+            'first_audio_file_path\t{}\n'.format(filename_format)))
         for artist_info in all_artist_info.split('\n'):
             if artist_info == '': # ignore empty line after last \n
                 continue
-            audio_url = artist_info.split('\t')[0]
+            audio_file_path = artist_info.split('\t')[0]
             art_filename = '{}.png'.format(artist_info.split('\t')[1])
-            if extract_art_from_url(audio_url, art_filename, out_dir):
+            if extract_art_from_url(audio_file_path, art_filename, out_dir):
                 print(art_filename)
             
 if __name__ == '__main__':
@@ -80,7 +80,7 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--object', metavar='music_object', type=str,
                         help='the music object type to do action on',
                         dest='music_object', choices=('playlist',
-                                                      'song',
+                                                      'track',
                                                       'album',
                                                       'liked',
                                                       'artist'))
@@ -92,10 +92,10 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--raw_cmd', metavar='raw command',
                         help='send a raw command to the server/daemon')
     parser.add_argument('-S', '--specifier', nargs='?', default='all',
-                        help='the specifier, could be a list of song ids')
+                        help='the specifier, could be a list of track ids')
     parser.add_argument('-c', '--current', action='store_true',
-                        dest='print_current_song',
-                        help='print the current song (that is playing)')
+                        dest='print_current_track',
+                        help='print the current track (that is playing)')
     parser.add_argument('-f', '--find_music', nargs='?', const=config.music_dir,
                         help='tell the daemon to look for music')
     parser.add_argument('-I', '--info', action='store_true',
@@ -142,7 +142,7 @@ if __name__ == '__main__':
                              args.generate_art, args.sort_by, args.limit)
             else:
                 parser.print_help()
-        elif args.print_current_song:
+        elif args.print_current_track:
             cmd_to_stdout('current')
         else:
             parser.print_help()

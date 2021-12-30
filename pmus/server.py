@@ -1,10 +1,10 @@
 import socket
 import traceback
 
-from pmus.music.player import MusicPlayerMode
-from pmus.utils.config import config
-from pmus.music.music import Track, Artist, Album
-from pmus.utils.utils import multiple_replace, reversed_if
+from pmus.player import MusicPlayerMode
+from pmus.config import config
+from pmus.music import Song, Artist, Album
+from pmus.utils import multiple_replace, reversed_if
 
 class Server:
     def __init__(self, music_player, music_provider, host=config.host,
@@ -62,16 +62,16 @@ class Server:
                 yield 'you didnt provide an id'
                 return
             music_object_type = args[0]
-            if music_object_type == 'track':
+            if music_object_type == 'song':
                 if len(args[1:]) == 0:
-                    yield 'please provide track ids'
+                    yield 'please provide song ids'
                     return
-                track_ids = [int(track_id) for track_id in args[1:]]
-                tracks = [self.music_provider.tracks[track_id]
-                         for track_id in track_ids]
-                self.music_player.play_clear_queue(tracks[0])
-                for track in tracks[1:]:
-                    self.music_player.add_to_queue(track)
+                song_ids = [int(song_id) for song_id in args[1:]]
+                songs = [self.music_provider.songs[song_id]
+                         for song_id in song_ids]
+                self.music_player.play_clear_queue(songs[0])
+                for song in songs[1:]:
+                    self.music_player.add_to_queue(song)
             elif music_object_type == 'album':
                 if len(args[1:]) == 0:
                     yield 'please provide the album\'s id'
@@ -80,7 +80,7 @@ class Server:
                 album = self.music_provider.albums[album_id]
                 self.music_player.play_album(album)
             else:
-                yield 'wrong music object type, allowed types: track, album'
+                yield 'wrong music object type, allowed types: song, album'
                 return
         elif cmd == 'next' or cmd == 'next':
             self.music_player.skip_to_next()
@@ -91,21 +91,21 @@ class Server:
             self.music_player.seek(position_in_seconds)
         elif cmd == 'list':
             if len(args) == 0:
-                yield 'you didnt provide the music object type: album, track'
+                yield 'you didnt provide the music object type: album, song'
                 return
             music_object_type = args[0]
-            if music_object_type == 'track' or music_object_type == 'liked':
-                list_liked_tracks_only = music_object_type == 'liked'
-                tracks_txt = ''
-                for track in self.music_provider.get_tracks_list():
-                    if list_liked_tracks_only and not track.is_liked():
+            if music_object_type == 'song' or music_object_type == 'liked':
+                list_liked_songs_only = music_object_type == 'liked'
+                songs_txt = ''
+                for song in self.music_provider.get_songs_list():
+                    if list_liked_songs_only and not song.is_liked():
                         continue
-                    yield '{} {} - {} - {}\n'.format(track.id,
-                                                     track.name,
-                                                     track.album.name,
-                                                     track.artists[0].name)
+                    yield '{} {} - {} - {}\n'.format(song.id,
+                                                     song.name,
+                                                     song.album.name,
+                                                     song.artists[0].name)
             elif music_object_type == 'album':
-                # if the album id is given we list it's tracks
+                # if the album id is given we list it's songs
                 # else we list all the albums
                 if len(args) > 1:
                     album_id = int(args[1])
@@ -113,10 +113,10 @@ class Server:
                     if album is None:
                         yield ''
                         return
-                    for track in album.tracks:
-                        yield '{} {} - {}\n'.format(track.id,
-                                                    track.name,
-                                                    track.artists[0].name)
+                    for song in album.songs:
+                        yield '{} {} - {}\n'.format(song.id,
+                                                    song.name,
+                                                    song.artists[0].name)
                 else:
                     for album in self.music_provider.get_albums_list():
                         yield '{} {} - {}\n'.format(album.id,
@@ -129,63 +129,63 @@ class Server:
                 for artist in self.music_provider.get_artists_list():
                     yield '{} {}\n'.format(artist.id, artist.name)
             else:
-                yield 'wrong music object type, allowed types: track, album'
+                yield 'wrong music object type, allowed types: song, album'
                 return
         elif cmd == 'progress':
-            if not self.music_player.current_track():
+            if not self.music_player.current_song():
                 yield ''
                 return
             yield '{}/{}'.format(
                     format(self.music_player.progress, '.2f'),
-                    format(self.music_player.current_track().duration, '.2f'))
+                    format(self.music_player.current_song().duration, '.2f'))
             return
         elif cmd == 'current':
-            if not self.music_player.current_track():
+            if not self.music_player.current_song():
                 yield ''
                 return
-            track = self.music_player.current_track()
-            yield '{} {} - {}'.format(track.id,
-                                      track.name,
-                                      track.artists[0].name)
+            song = self.music_player.current_song()
+            yield '{} {} - {}'.format(song.id,
+                                      song.name,
+                                      song.artists[0].name)
             return
         elif cmd == 'add':
             music_object_type = args[0]
-            if music_object_type == 'track':
-                track_ids = [int(track_id) for track_id in args[1:]]
-                tracks = [self.music_provider.tracks[track_id]
-                         for track_id in track_ids]
-                for track in tracks:
-                    self.music_player.add_to_queue(track)
+            if music_object_type == 'song':
+                song_ids = [int(song_id) for song_id in args[1:]]
+                songs = [self.music_provider.songs[song_id]
+                         for song_id in song_ids]
+                for song in songs:
+                    self.music_player.add_to_queue(song)
             elif music_object_type == 'album':
                 yield 'not added yet'
                 return
             else:
-                yield 'wrong music object type, allowed types: track, album'
+                yield 'wrong music object type, allowed types: song, album'
                 return
         elif cmd == 'queue':
             queue_txt = ''
-            for track in reversed(self.music_player.track_queue):
-                yield '{} {} - {}\n'.format(track.id,
-                                            track.name,
-                                            track.artists[0].name)
-            for track in reversed(self.music_player.ended_track_queue):
-                yield '{} {} - {}\n'.format(track.id,
-                                            track.name,
-                                            track.artists[0].name)
+            for song in reversed(self.music_player.song_queue):
+                yield '{} {} - {}\n'.format(song.id,
+                                            song.name,
+                                            song.artists[0].name)
+            for song in reversed(self.music_player.ended_song_queue):
+                yield '{} {} - {}\n'.format(song.id,
+                                            song.name,
+                                            song.artists[0].name)
             return
         elif cmd == 'like':
             if len(args) == 0:
-                yield 'you didnt provide the tracks id'
+                yield 'you didnt provide the songs id'
                 return
-            track_id = int(args[0])
-            self.music_provider.like_track(self.music_provider.tracks[track_id])
+            song_id = int(args[0])
+            self.music_provider.like_song(self.music_provider.songs[song_id])
         elif cmd == 'is_liked':
             if len(args) == 0:
-                yield 'you didnt provide the id of the track'
+                yield 'you didnt provide the id of the song'
                 return
-            track_id = int(args[0])
-            yield str(self.music_provider.tracks[track_id].is_liked()).lower()
-        elif cmd == 'loop_track':
+            song_id = int(args[0])
+            yield str(self.music_provider.songs[song_id].is_liked()).lower()
+        elif cmd == 'loop_song':
             self.music_player.mode = MusicPlayerMode.LOOP_SONG
         elif cmd == 'loop_queue':
             self.music_player.mode = MusicPlayerMode.LOOP_QUEUE
@@ -193,10 +193,10 @@ class Server:
             yield self.music_player.mode.name
         elif cmd == 'lyrics':
             if len(args) == 0:
-                yield 'you didnt provide the id of the track'
+                yield 'you didnt provide the id of the song'
                 return
-            track_id = args[0]
-            lyrics = self.music_provider.db_provider.get_track_lyrics(track_id)
+            song_id = args[0]
+            lyrics = self.music_provider.db_provider.get_song_lyrics(song_id)
             if not lyrics:
                 yield ''
             else:
@@ -234,19 +234,19 @@ class Server:
             yield 'unknown command'
         return
 
-def get_artists_of_tracks(tracks):
+def get_artists_of_songs(songs):
     artists = []
-    for track in tracks:
-        for artist in track.artists:
+    for song in songs:
+        for artist in song.artists:
             if not artist in artists:
                 artists.append(artist)
     return artists
 
-def get_albums_of_tracks(tracks):
+def get_albums_of_songs(songs):
     albums = []
-    for track in tracks:
-        if not track.album in albums:
-            albums.append(track.album)
+    for song in songs:
+        if not song.album in albums:
+            albums.append(song.album)
     return albums
 
 def sort(music_objects, sort_by):
@@ -272,7 +272,7 @@ def sort(music_objects, sort_by):
 
 def get_info(server, output_music_type, specifier, sort_by, limit, fmt,
              reverse=False):
-    music_objects_map = server.music_provider.tracks
+    music_objects_map = server.music_provider.songs
     if output_music_type == 'artist':
         music_objects_map = server.music_provider.artists
     elif output_music_type == 'album':
@@ -282,24 +282,24 @@ def get_info(server, output_music_type, specifier, sort_by, limit, fmt,
 
     if specifier == 'current' or specifier == 'liked':
         if specifier == 'current':
-            desired_tracks = server.music_player.current_tracks()
+            desired_songs = server.music_player.current_songs()
         else:
-            desired_tracks = []
-            for track in server.music_provider.tracks.values():
-                if track.is_liked():
-                    desired_tracks.append(track)
+            desired_songs = []
+            for song in server.music_provider.songs.values():
+                if song.is_liked():
+                    desired_songs.append(song)
         if output_music_type == 'artist':
-            for artist in reversed_if(sort(get_artists_of_tracks(desired_tracks),
+            for artist in reversed_if(sort(get_artists_of_songs(desired_songs),
                                            sort_by), reverse)[:limit]:
                 yield format_info(artist, fmt)
         elif output_music_type == 'album':
-            for album in reversed_if(sort(get_albums_of_tracks(desired_tracks),
+            for album in reversed_if(sort(get_albums_of_songs(desired_songs),
                                           sort_by), reverse)[:limit]:
                 yield format_info(album, fmt)
         else:
-            for track in reversed_if(sort(desired_tracks, sort_by),
+            for song in reversed_if(sort(desired_songs, sort_by),
                                     reverse)[:limit]:
-                yield format_info(track, fmt)
+                yield format_info(song, fmt)
     elif specifier == 'all':
         for music_object in reversed_if(sort(list(music_objects_map.values()),
                                              sort_by), reverse)[:limit]:
@@ -318,9 +318,9 @@ def get_info(server, output_music_type, specifier, sort_by, limit, fmt,
                 if output_music_type == 'artist':
                     for artist in album.artists:
                         desired_music_objects.append(artist)
-                elif output_music_type == 'track':
-                    for track in album.tracks:
-                        desired_music_objects.append(track)
+                elif output_music_type == 'song':
+                    for song in album.songs:
+                        desired_music_objects.append(song)
                 else:
                     desired_music_objects.append(album)
             if input_object_type == 'artist':
@@ -328,21 +328,21 @@ def get_info(server, output_music_type, specifier, sort_by, limit, fmt,
                 if output_music_type == 'album':
                     for album in artist.albums:
                         desired_music_objects.append(album)
-                elif output_music_type == 'track':
+                elif output_music_type == 'song':
                     for album in artist.albums:
-                        for track in album.tracks:
-                            desired_music_objects.append(track)
+                        for song in album.songs:
+                            desired_music_objects.append(song)
                 else:
                     desired_music_objects.append(artist)
-            if input_object_type == 'track':
-                track = server.music_provider.tracks[input_object_id]
+            if input_object_type == 'song':
+                song = server.music_provider.songs[input_object_id]
                 if output_music_type == 'album':
-                    desired_music_objects.append(track)
+                    desired_music_objects.append(song)
                 elif output_music_type == 'artist':
-                    for artist in track.artists:
+                    for artist in song.artists:
                         desired_music_objects.append(artist)
                 else:
-                    desired_music_objects.append(track)
+                    desired_music_objects.append(song)
         objects_yielded = 0
         for music_obj in reversed_if(sort(desired_music_objects, sort_by),
                                      reverse)[:limit]:
@@ -352,26 +352,26 @@ def get_info(server, output_music_type, specifier, sort_by, limit, fmt,
             objects_yielded += 1
 
 def format_info(music_object, fmt):
-    if isinstance(music_object, Track):
-        return multiple_replace(fmt, # music object is track
+    if isinstance(music_object, Song):
+        return multiple_replace(fmt, # music object is song
                 {'artist_name' : music_object.artists[0].name,
                  'album_id' : str(music_object.album.id),
                  'album_name': music_object.album.name,
                  'name': music_object.name,
                  'id': str(music_object.id),
-                 'url': music_object.audio_file_path})
+                 'url': music_object.audio_url})
     if isinstance(music_object, Album): # music object is album
         return multiple_replace(fmt,
                 {'id': str(music_object.id),
                  'artist_name': music_object.artists[0].name,
                  'name': music_object.name,
-                 'first_audio_file_path': music_object.tracks[0].audio_file_path})
+                 'first_audio_url': music_object.songs[0].audio_url})
     if isinstance(music_object, Artist): # music object is artist
         try:
-            first_audio_file_path = music_object.albums[0].tracks[0].audio_file_path
+            first_audio_url = music_object.albums[0].songs[0].audio_url
         except:
-            first_audio_file_path = 'none'
+            first_audio_url = 'none'
         return multiple_replace(fmt,
                 {'id': str(music_object.id),
                  'name': music_object.name,
-                 'first_audio_file_path': first_audio_file_path})
+                 'first_audio_url': first_audio_url})

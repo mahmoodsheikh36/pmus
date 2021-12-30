@@ -19,12 +19,12 @@ def get_largest_elements(list_to_sort, limit, compare):
         mylist.remove(biggest)
     return final_list
 
-def get_top_songs(provider, limit):
-    def compare(song1, song2):
-        if song1.time_listened() > song2.time_listened():
+def get_top_tracks(provider, limit):
+    def compare(track1, track2):
+        if track1.time_listened() > track2.time_listened():
             return True
         return False
-    return get_largest_elements(provider.get_songs_list(),
+    return get_largest_elements(provider.get_tracks_list(),
             limit,
             compare)
 
@@ -51,22 +51,22 @@ if __name__ == '__main__':
     provider.load_music()
 
     top_albums = get_top_albums(provider, ENTRY_COUNT)
-    top_songs = get_top_songs(provider, ENTRY_COUNT)
+    top_tracks = get_top_tracks(provider, ENTRY_COUNT)
     top_artists = get_top_artists(provider, ENTRY_COUNT)
 
-    fig, (songs_ax, albums_ax, artists_ax) = plt.subplots(3)
+    fig, (tracks_ax, albums_ax, artists_ax) = plt.subplots(3)
     fig.tight_layout()
     plt.subplots_adjust(hspace=0.5)
 
-    # plot songs
-    #songs_graph_color = (0.9, 0.4, 0.6)
-    songs_ax.bar(['{}\n{}'.format(song.name, song.artists[0].name)
-                     for song in top_songs],
-                    [song.time_listened() / 1000 for song in top_songs],)
-                    #color=songs_graph_color)
-    songs_ax.set_xlabel('songs', fontsize=18, #color=songs_graph_color,
+    # plot tracks
+    #tracks_graph_color = (0.9, 0.4, 0.6)
+    tracks_ax.bar(['{}\n{}'.format(track.name, track.artists[0].name)
+                     for track in top_tracks],
+                    [track.time_listened() / 1000 for track in top_tracks],)
+                    #color=tracks_graph_color)
+    tracks_ax.set_xlabel('tracks', fontsize=18, #color=tracks_graph_color,
                             weight='bold')
-    #songs_graph.set_ylabel('seconds listened', fontsize=18, #color=songs_graph_color,
+    #tracks_graph.set_ylabel('seconds listened', fontsize=18, #color=tracks_graph_color,
                             #weight='bold')
 
     # plot albums

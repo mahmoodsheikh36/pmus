@@ -6,7 +6,7 @@ tmp_dir = '/tmp/art'
 
 def get_albums():
     return send_cmd_wait_all(
-            'info song liked time_liked album_id\talbum_name\tartist_name\turl\n')
+            'info track liked time_liked album_id\talbum_name\tartist_name\turl\n')
 
 def generate_art(album_id, album_name, artist_name, url):
     subprocess.call(['ffmpeg', '-y', '-i', url, '{}/{} - {} - {}.png'.format(

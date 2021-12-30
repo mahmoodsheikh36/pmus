@@ -1,5 +1,5 @@
 import socket
-from pmus.utils.config import config
+from pmus.config import config
 
 RECV_CHUNK_SIZE = 1024
 

@@ -8,4 +8,4 @@ SONG_ID = 23
 
 if __name__ == '__main__':
     provider = MusicProvider()
-    print(provider.get_seconds_listened_to_song(SONG_ID))
+    print(provider.get_seconds_listened_to_track(SONG_ID))

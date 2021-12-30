@@ -1,7 +1,7 @@
 import json
 import subprocess
 from pathlib import Path
-from pmus.utils.utils import get_home_dir
+from pmus.utils import get_home_dir
 
 def get_config_dir():
     return get_home_dir() + '/.config/pmus'
@@ -30,10 +30,10 @@ def get_cache_dir():
     Path(path).mkdir(parents=True, exist_ok=True)
     return path
 
-def config_on_play(track):
+def config_on_play(song):
     if config.on_play_script:
         try:
-            subprocess.Popen([config.on_play_script, str(track.id)])
+            subprocess.Popen([config.on_play_script, str(song.id)])
         except:
             pass
 

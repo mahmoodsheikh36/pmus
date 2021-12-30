@@ -19,20 +19,20 @@ def get_largest_elements(list_to_sort, limit, compare):
         mylist.remove(biggest)
     return final_list
 
-def get_top_songs(provider, limit):
-    def compare(song1, song2):
-        if song1.time_listened() > song2.time_listened():
+def get_top_tracks(provider, limit):
+    def compare(track1, track2):
+        if track1.time_listened() > track2.time_listened():
             return True
         return False
     print('loaded music')
-    return get_largest_elements(provider.get_songs_list(), limit, compare)
+    return get_largest_elements(provider.get_tracks_list(), limit, compare)
 
 if __name__ == '__main__':
     provider = MusicProvider()
     provider.load_music()
-    top_songs = get_top_songs(provider, 30)
-    print('got top songs')
-    top_songs.reverse()
+    top_tracks = get_top_tracks(provider, 30)
+    print('got top tracks')
+    top_tracks.reverse()
 
     fig = plt.figure(figsize=(8, 8))
     ax = plt.subplot(111)
@@ -41,12 +41,12 @@ if __name__ == '__main__':
     first_listen_time = provider.playbacks[1].time_started
     total_time = current_time() - first_listen_time
 
-    bar_plot = ax.barh(range(len(top_songs)),
-                       [song.time_listened() / 1000 for song in top_songs],
+    bar_plot = ax.barh(range(len(top_tracks)),
+                       [track.time_listened() / 1000 for track in top_tracks],
                        color='grey')
 
     for idx, rect in enumerate(bar_plot):
-        ax.text(10, rect.get_y() + rect.get_height() / 3, top_songs[idx].name,
+        ax.text(10, rect.get_y() + rect.get_height() / 3, top_tracks[idx].name,
                 fontsize=14, color='w')
 
     fig.tight_layout()

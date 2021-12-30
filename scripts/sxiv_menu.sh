@@ -6,10 +6,10 @@
 generate_art() {
     album_id=$1
     # using raw commands cuz i havent implemented a specifier for album ids yet
-    first_song_id=$(pmus -r "list album $album_id" | head -1\
+    first_track_id=$(pmus -r "list album $album_id" | head -1\
         | cut -d ' ' -f1 2>/dev/null)
-    song_url=$(pmus -o song -S $first_song_id -I url)
-    ffmpeg -y -i "$song_url" /tmp/art/"$(basename "$song_url")".png 2>/dev/null
+    track_url=$(pmus -o track -S $first_track_id -I url)
+    ffmpeg -y -i "$track_url" /tmp/art/"$(basename "$track_url")".png 2>/dev/null
 }
 
 if [ -d /tmp/art ]; then rm /tmp/art/*; else mkdir /tmp/art; fi 2>/dev/null

@@ -20,8 +20,8 @@ if __name__ == '__main__':
     time_listened = 0
     for i in range(time_fractions):
         print(i)
-        for song in provider.get_songs_list():
-            time_listened += song.time_listened(from_time, to_time)
+        for track in provider.get_tracks_list():
+            time_listened += track.time_listened(from_time, to_time)
         xs.append((from_time - first_listen_time) / 1000 / 3600)
         ys.append(time_listened / 1000 / 3600)
         from_time = to_time
