@@ -1,0 +1,2 @@
+to run the music daemon you need ~pyaudio~
+on macos ~brew install portaudio~ and then ~pip3 install pyaudio~
