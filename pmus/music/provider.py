@@ -98,7 +98,6 @@ class MusicProvider:
         for track in self.tracks.values():
             if track.audio_file_path == filepath:
                 return
-        print('hey')
         audio_format = get_audio_format(filepath)
         if not 'tags' in audio_format:
             return
@@ -155,7 +154,6 @@ class MusicProvider:
                 self.db_provider.add_track_artist(track_id, db_artist['id'])
 
     def find_music(self, music_dir=config.music_dir):
-        print('woW')
         for folder, subs, files in os.walk(music_dir):
             for filename in files:
                 is_audio_file = False
@@ -165,7 +163,6 @@ class MusicProvider:
                 if not is_audio_file:
                     continue
                 filepath = os.path.join(folder, filename)
-                print(filepath)
                 self.on_audio_file_found(filepath)
         self.db_provider.commit()
 
